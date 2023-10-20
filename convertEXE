@@ -155,7 +155,7 @@ def output_hex(output, prefix, title, base, noheader,binary_data, silent):
 
 @click.command()
 @click.option("--base","-b", help="Base address.",required=True)
-@click.option("--cassette","-c", help="Cassette output file (experimental).",required=False,default="")
+@click.option("--cassette","-c", help="Cassette output file.",required=False,default="")
 @click.option("--input","-i", help="Input MC6800 executable file.",required=True)
 @click.option("--noheader","-n", help="Don't produce headers for JS file.",required=False,default=False,is_flag=True)
 @click.option("--output","-o", help="Output file (will have a '.js' extension).",required=False, default="")
