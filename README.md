@@ -12,8 +12,7 @@ A tool to convert from an assembled 6800 code to several Sphere-1 compatible for
     * Folow the build instructions in the [README](https://github.com/bzotto/bin2sphere/blob/main/README.md)
     * Ensure the built executable is located in the same folder/directory as the `convertEXE` from this repo
 
-|`NOTE` | |
-|-|-|
+> **_NOTE:_**  
 _There is a version of `bin2sphere` included in this repo  dated October 9th 2023. It is recommended that to ensure the latest software is being used that you follow the installation instructions for `bin2sphere` above._
 
 ## convertEXE package
