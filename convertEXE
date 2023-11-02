@@ -7,22 +7,35 @@
 # Requires Python 3.9 or newer
 #
 
+# Import system libraries
+import os
+import sys
+import subprocess
 from datetime import date
 
+# Import 3rd party library
 import click
+
+# Import program-specific library
 import encode_tape
 
+
 """
+
 Takes a binary Sphere-1 program and converts it into a format that can be
      i)   Included in the Virtual Sphere simulator
-    ii)   Converted to a  Kansas City Standard WAV file.
+    ii)   Used in a Virtual Sphere as a 'cassette'
+   iii)   Converted to a  Kansas City Standard WAV file.
 See http://en.wikipedia.org/wiki/Kansas_City_standard
+
+
+             Portions (c) Ben Zotto 2023
 """
 
 # Define software characteristics
-_version = '1.0.1';
+_version = '1.0.2';
 _package_name = 'convertEXE';
-_message = '%(package)s (Version %(version)s): Convert MC6800 assembled code into Sphere-1 loadable package and other formats.';
+_message = '%(package)s (Version %(version)s): Convert MC6800 assembled code into Sphere-1 loadable package and other formats.\n(c) Andrew Shapton 2023, Portions (c) Ben Zotto 2023';
 
 # Define Tape Constants
 SYNC                =   '0x16, '   # Synchronisation Byte
@@ -36,6 +49,7 @@ TAB                 =   '\t'
 TODAY               =   date.today().strftime("%d/%m/%Y")
 EXTRA_DATA          =   13
 CASSETTE_EXTENSION  =   '.wav'
+TMP_EXTENSION       =   '.cassette'
 
 # Define defaults
 BLOCK_NAME          =   'XX'
@@ -119,14 +133,15 @@ def write_binary_content(file, binary_data, prefix):
     
 def write_preamble(filehandle, filename, prefix, title, base, noheader):
     if not(noheader):
-        filehandle.write("/// Executable image for : " + filename + CR)
+        filehandle.write('/// Executable image for : ' + filename + CR)
         filehandle.write("/// Date                 : " + TODAY + CR)
         filehandle.write("///" + CR)
         filehandle.write("/// Created by " + _package_name + " " + _version + CR)
         filehandle.write("///" + CR)
-        click.secho('Written preamble : Title       : ' + title, fg="green")
-        click.secho('                 : Prefix      : ' + prefix, fg="green")
-        click.secho('                 : Address     : ' + base, fg="green")
+        click.secho('Program Information', underline=True, fg="green")
+        click.secho('                               Title   : ' + title, fg="green")
+        click.secho('                               Prefix  : ' + prefix, fg="green")
+        click.secho('                               Address : ' + base + CR, fg="green")
         
     filehandle.write("const cassette_" + prefix.lower() + " =  { title: \"" + title + \
         "\", label: \"" + prefix + "/" + base + "\", data:" + CR)
@@ -135,43 +150,52 @@ def write_preamble(filehandle, filename, prefix, title, base, noheader):
 def write_postamble(filehandle):
     filehandle.write(CR + "]};" + CR)
     
+def convert_to_interim_format(block_name, input_file, output_file):
+    # Run Ben Zotto's process to convert to cassette format ready for converting to a WAV file.
+    current_directory = os.path.abspath(os.path.dirname(sys.argv[0]));
+    arg = [current_directory + '/bin2sphere', block_name, input_file, output_file];
+    subprocess.run(arg);
+    
 def output_hex(output, prefix, title, base, noheader,binary_data, silent):
     # The business end.....
     with open(output,'w') as file:
         
         # Output the first stage of information to allow the file to be appended to the Virtual Sphere codebase
-        write_preamble(file, input, prefix, title, base, noheader)
+        write_preamble(file, output, prefix, title, base, noheader)
 
         # Output the binary content of the executable in the correct format
         write_binary_content(file, binary_data, prefix)
         if not(silent):
-            click.secho('Written binary content         : ' + str(len(binary_data) + EXTRA_DATA)+ ' bytes', fg="green")
+            click.secho('Output Information', underline=True, fg="green")
+            click.secho('         Written binary content        : ' + str(len(binary_data) + EXTRA_DATA)+ ' bytes', fg="green")
         
         # Output the final stage of information to the data block and close the braces etc
         write_postamble(file)
         if not(silent):
-            click.secho(CR + 'Output JS file created         : ' + output + CR, fg="green")
+            click.secho('         Output JS file created        : ' + output, fg="green")
 
 
 @click.command()
 @click.option("--base","-b", help="Base address.",required=True)
 @click.option("--cassette","-c", help="Cassette output file.",required=False,default="")
 @click.option("--input","-i", help="Input MC6800 executable file.",required=True)
+@click.option("--js","-j", help="Output file (will have a '.js' extension).",required=False, default="")
 @click.option("--noheader","-n", help="Don't produce headers for JS file.",required=False,default=False,is_flag=True)
-@click.option("--output","-o", help="Output file (will have a '.js' extension).",required=False, default="")
 @click.option("--prefix","-p", help="Cassette prefix.",required=False, default=BLOCK_NAME)
-@click.option("--title","-t", help="Cassette title (for Virtual Sphere).",required=False, default="NONE")
 @click.option("--silent","-s", help="Silent (no output).",required=False,default=False,is_flag=True)
+@click.option("--title","-t", help="Cassette title (for Virtual Sphere).",required=False, default="NONE")
+@click.option("--vcass","-v", help="Produce a virtual cassette.",required=False,default="NONE")
 @click.version_option(version=_version, package_name=_package_name, message=_message)
-def cli(base, input, output, prefix, title, cassette, noheader, silent):
+def cli(base, input, js, prefix, title, cassette, noheader, silent, vcass):
     
     # Announcement
     if not(silent):
         click.secho(_package_name + ' ' + _version + ' on ' + TODAY + CR, fg="green", bold=True)
-        click.secho('Options: ' + ('No JS header' if noheader else 'With JS header'), fg="green")
-        click.secho('         ' + ('With cassette output' if cassette else 'No cassette output') + CR, fg="green")
+        click.secho('Options', underline = True, fg="green")
+        click.secho('         ' + ('No JS header' if noheader else 'With JS header'), fg="green")
+        click.secho('         ' + ('With cassette output' if cassette else 'No cassette output'), fg="green")
+        click.secho('         ' + ('With Virtual Sphere cassette output' if vcass != "" else 'No Virtual Sphere cassette output') + CR, fg="green")
       
-
 
     #
     # Validate options supplied
@@ -185,12 +209,18 @@ def cli(base, input, output, prefix, title, cassette, noheader, silent):
             exit()
     else:
         if not(silent):
-            click.secho('Read ' + str(len(binary_data)) + ' bytes from input file : ' + input + CR   , fg="green")
+            click.secho('Input Information', underline = True, fg="green")
+            click.secho('         ' + 'Input file                    : ' + input, fg="green")
+            click.secho('         ' + 'Bytes read from input file    : ' + str(len(binary_data)) + ' bytes' + CR, fg="green")
 
     # Check prefix parameter
     if len(prefix) != 2:
-        click.secho('Prefix should either be empty or 2 characters: ' + prefix, fg="red", err=True)
+        click.secho('Prefix should either be empty or 2 characters : ' + prefix, fg="red", err=True)
         exit()
+    
+    # 
+    # Modify parameters if required
+    #
         
     # Check for lowercase/uppercase prefix
     ucase_prefix = prefix.upper()
@@ -200,18 +230,35 @@ def cli(base, input, output, prefix, title, cassette, noheader, silent):
   
     
     # Construct output filename if none is supplied
-    if output == "":
-        output = input + EXTENSION;
+    if js == "":
+        js = input + EXTENSION;
     
     # Output the hex array
-    output_hex(output, prefix, title, base, noheader,binary_data, silent)
-    
+    output_hex(js, prefix, title, base, noheader,binary_data, silent)
+
+    # Do we need to produce a Virtual Sphere cassette?    
+    if vcass  != "NONE":
+        vcass_file = cassette + TMP_EXTENSION
+        convert_to_interim_format(prefix, input, vcass_file)
+        if not(silent):
+            click.secho('         VSphere Cassette file created : ' + vcass_file , fg="green")
+
     # Do we need to produce a WAV file for cassette?
     if cassette != "":
         cassette_file = cassette + CASSETTE_EXTENSION
-        encode_tape.write_wav(input,cassette_file);
-        click.secho('Cassette file created          : ' + cassette_file, fg="green")
-        
+        tmp_file = cassette + TMP_EXTENSION
+        convert_to_interim_format(prefix, input, tmp_file)
+        encode_tape.write_wav(tmp_file,cassette_file);
+        # Try to remove the temporary file.
+        # Ignore the error if it can't be deleted.
+        try: 
+            os.remove(tmp_file);
+        except FileNotFoundError:
+            pass;
+        if not(silent):
+            click.secho('         Audio Cassette file created   : ' + cassette_file, fg="green")
+    
+
 
 if __name__ == '__main__':
     cli()
