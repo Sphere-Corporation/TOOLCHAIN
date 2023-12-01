@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cas.py
+# convertEXE
 #
 # Author : Andrew Shapton 
 # Copyright (C) 2023
@@ -10,6 +10,7 @@
 # Import system libraries
 import os
 import sys
+
 import subprocess
 from datetime import date
 
@@ -18,7 +19,6 @@ import click
 
 # Import program-specific library
 import encode_tape
-
 
 """
 
@@ -152,11 +152,23 @@ def write_postamble(filehandle):
     
 def convert_to_interim_format(block_name, input_file, output_file):
     # Run Ben Zotto's process to convert to cassette format ready for converting to a WAV file.
+    # 
     current_directory = os.path.abspath(os.path.dirname(sys.argv[0]));
-    arg = [current_directory + '/bin2sphere', block_name, input_file, output_file];
-    subprocess.run(arg);
+    command = current_directory + '/bin2sphere ' + block_name + ' ' + ' ' + input_file + ' ' + output_file
     
-def output_hex(output, prefix, title, base, noheader,binary_data, silent):
+    # Open a subprocess to run the command
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True);
+
+    # Establish a connection to the process
+    (output, err) = p.communicate()  ;
+
+    # Wait until the process has completed
+    _ = p.wait();
+
+def get_basename(filename):
+    return os.path.basename(filename)
+    
+def output_hex(output, prefix, title, base, noheader,binary_data, silent, out):
     # The business end.....
     with open(output,'w') as file:
         
@@ -167,56 +179,89 @@ def output_hex(output, prefix, title, base, noheader,binary_data, silent):
         write_binary_content(file, binary_data, prefix)
         if not(silent):
             click.secho('Output Information', underline=True, fg="green")
-            click.secho('         Written binary content        : ' + str(len(binary_data) + EXTRA_DATA)+ ' bytes', fg="green")
+            click.secho('         Destination                   : ' + out, fg="green")
+            click.secho('         Cassette size                 : ' + str(len(binary_data) + EXTRA_DATA)+ ' bytes', fg="green")
         
         # Output the final stage of information to the data block and close the braces etc
         write_postamble(file)
         if not(silent):
-            click.secho('         Output JS file created        : ' + output, fg="green")
+            click.secho('         Output JS file created        : ' + get_basename(output), fg="green")
+
+def validate_options(_i, _o, _input, prefix, vcass, js):
+    # Check that the mandatory input and output folders exist
+    if _i == 'NONE':
+        click.secho('An input location is required', fg="red", err=True)
+        exit(1)
+    if _o == 'NONE':
+        click.secho('An output location is required', fg="red", err=True)
+        exit(1)
+        
+    if not(os.path.isdir(_i)):
+        click.secho('Input location does not exist', fg="red", err=True)
+        exit(1)
+    if not(os.path.isdir(_o)):
+        click.secho('Output location does not exist', fg="red", err=True)
+        exit(1)
+        
+    binary_data = read_input_file(_input);
+    if iserror(binary_data):
+        if (geterror(binary_data)=='FileNotFoundError'):
+            click.secho('Input file not found: ' + _input, fg="red", err=True)
+            exit(1)
+    
+    # Check prefix parameter
+    if len(prefix) != 2:
+        click.secho('Prefix should either be empty or 2 characters : ' + prefix, fg="red", err=True)
+        exit(1)
+        
+        
+def announcement(TODAY, noheader, cassette, vcass, silent):
+    if not(silent):
+            click.secho(_package_name + ' ' + _version + ' on ' + TODAY + CR, fg="green", bold=True)
+            click.secho('Options', underline = True, fg="green")
+            click.secho('         ' + ('No JS header' if noheader else 'With JS header'), fg="green")
+            click.secho('         ' + ('With cassette output' if cassette else 'No cassette output'), fg="green")
+            click.secho('         ' + ('With Virtual Sphere cassette output' if vcass != "" else 'No Virtual Sphere cassette output') + CR, fg="green")
 
 
-@click.command()
+@click.command(epilog='Check out the Github page for more documentation at https://github.com/Sphere-Corporation/CONVERT')
 @click.option("--base","-b", help="Base address.",required=True)
-@click.option("--cassette","-c", help="Cassette output file.",required=False,default="")
-@click.option("--input","-i", help="Input MC6800 executable file.",required=True)
-@click.option("--js","-j", help="Output file (will have a '.js' extension).",required=False, default="")
+@click.option("--cassette","-c", help="Cassette output file.",required=False,default="NONE")
+@click.option("--in","-I", "_i", help="Specify an input folder.", required=True,default='NONE')
+@click.option("--input","-i", "_input", help="Input MC6800 executable file.",required=True)
+@click.option("--js","-j", help="Virtual Cassette Javascript (will have a '.js' extension).",required=False, default="")
+@click.option("--movebin","-m", help="Move original binary to output location",required=False,default=False,is_flag=True)
 @click.option("--noheader","-n", help="Don't produce headers for JS file.",required=False,default=False,is_flag=True)
+@click.option("--out", "-O", "_o", help="Specify an output folder.", required=True,default='NONE')
 @click.option("--prefix","-p", help="Cassette prefix.",required=False, default=BLOCK_NAME)
 @click.option("--silent","-s", help="Silent (no output).",required=False,default=False,is_flag=True)
 @click.option("--title","-t", help="Cassette title (for Virtual Sphere).",required=False, default="NONE")
 @click.option("--vcass","-v", help="Produce a virtual cassette.",required=False,default="NONE")
 @click.version_option(version=_version, package_name=_package_name, message=_message)
-def cli(base, input, js, prefix, title, cassette, noheader, silent, vcass):
+def cli(base, _i, _input, js, movebin, prefix, title, _o, cassette, noheader, silent, vcass):
     
+    #
     # Announcement
-    if not(silent):
-        click.secho(_package_name + ' ' + _version + ' on ' + TODAY + CR, fg="green", bold=True)
-        click.secho('Options', underline = True, fg="green")
-        click.secho('         ' + ('No JS header' if noheader else 'With JS header'), fg="green")
-        click.secho('         ' + ('With cassette output' if cassette else 'No cassette output'), fg="green")
-        click.secho('         ' + ('With Virtual Sphere cassette output' if vcass != "" else 'No Virtual Sphere cassette output') + CR, fg="green")
-      
-
+    #
+    
+    announcement(TODAY, noheader, cassette, vcass, silent)
+          
     #
     # Validate options supplied
     #
 
-    # Open the binary file for reading
-    binary_data = read_input_file(input);
-    if iserror(binary_data):
-        if (geterror(binary_data)=='FileNotFoundError'):
-            click.secho('Input file not found: ' + input, fg="red", err=True)
-            exit()
-    else:
-        if not(silent):
-            click.secho('Input Information', underline = True, fg="green")
-            click.secho('         ' + 'Input file                    : ' + input, fg="green")
-            click.secho('         ' + 'Bytes read from input file    : ' + str(len(binary_data)) + ' bytes' + CR, fg="green")
+    validate_options(_i, _o, _input, prefix, vcass, js)
 
-    # Check prefix parameter
-    if len(prefix) != 2:
-        click.secho('Prefix should either be empty or 2 characters : ' + prefix, fg="red", err=True)
-        exit()
+    # Formulate complete path for input file
+    _input = _i + _input
+    
+    # Open the binary file for reading
+    binary_data = read_input_file(_input);
+    if not(silent):
+        click.secho('Input Information', underline = True, fg="green")
+        click.secho('         ' + 'Source                        : ' + _i, fg="green");
+        click.secho('         ' + 'Input file                    : ' + get_basename(_input), fg="green")
+        click.secho('         ' + 'Bytes read from input file    : ' + str(len(binary_data)) + ' bytes' + CR, fg="green")
     
     # 
     # Modify parameters if required
@@ -228,27 +273,29 @@ def cli(base, input, js, prefix, title, cassette, noheader, silent, vcass):
         prefix = ucase_prefix
         click.secho('Info:    Prefix changed to upper case'  + CR, fg="blue")
   
-    
     # Construct output filename if none is supplied
     if js == "":
-        js = input + EXTENSION;
+        js = _o + get_basename(_input) + EXTENSION;
+    else:
+        js = _o + get_basename(js) + EXTENSION;
     
     # Output the hex array
-    output_hex(js, prefix, title, base, noheader,binary_data, silent)
+    output_hex(js, prefix, title, base, noheader, binary_data, silent, _o)
 
     # Do we need to produce a Virtual Sphere cassette?    
     if vcass  != "NONE":
-        vcass_file = cassette + TMP_EXTENSION
-        convert_to_interim_format(prefix, input, vcass_file)
+        vcass_file = _o + cassette + TMP_EXTENSION
+        convert_to_interim_format(prefix, _input, vcass_file)
         if not(silent):
-            click.secho('         VSphere Cassette file created : ' + vcass_file , fg="green")
+            click.secho('         VSphere Cassette file created : ' + get_basename(vcass_file) , fg="green")
 
     # Do we need to produce a WAV file for cassette?
-    if cassette != "":
-        cassette_file = cassette + CASSETTE_EXTENSION
+    if cassette != "NONE":
+        cassette_file = _o + cassette + CASSETTE_EXTENSION
         tmp_file = cassette + TMP_EXTENSION
-        convert_to_interim_format(prefix, input, tmp_file)
+        convert_to_interim_format(prefix, vcass_file, tmp_file)
         encode_tape.write_wav(tmp_file,cassette_file);
+        
         # Try to remove the temporary file.
         # Ignore the error if it can't be deleted.
         try: 
@@ -256,9 +303,12 @@ def cli(base, input, js, prefix, title, cassette, noheader, silent, vcass):
         except FileNotFoundError:
             pass;
         if not(silent):
-            click.secho('         Audio Cassette file created   : ' + cassette_file, fg="green")
+            click.secho('         Audio Cassette file created   : ' + get_basename(cassette_file), fg="green")
     
-
+    # Do we need to move the original binary to the output folder?
+        if movebin:
+            os.rename(_input, _o + os.path.basename(_input))
+        
 
 if __name__ == '__main__':
     cli()

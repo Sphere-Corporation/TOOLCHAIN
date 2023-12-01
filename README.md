@@ -41,9 +41,12 @@ Usage: convertEXE [OPTIONS]
 Options:
   -b, --base TEXT      Base address.  [required]
   -c, --cassette TEXT  Cassette output file.
+  -I, --in TEXT        Specify an input folder.  [required]
   -i, --input TEXT     Input MC6800 executable file.  [required]
-  -j, --js TEXT        Output file (will have a '.js' extension).
+  -j, --js TEXT        Virtual Cassette Javascript (will have a '.js' extension).
+  -m, --movebin        Move original binary to output location
   -n, --noheader       Don't produce headers for JS file.
+  -O, --out TEXT       Specify an output folder.  [required]
   -p, --prefix TEXT    Cassette prefix.
   -s, --silent         Silent (no output).
   -t, --title TEXT     Cassette title (for Virtual Sphere).
