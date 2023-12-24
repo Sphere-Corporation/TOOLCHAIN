@@ -1,7 +1,7 @@
 [project]
-name = "convertEXE"
+name = "convertSPHERE"
 version = "1.0.2"
-description = "Convert assembled 6800 code to a Sphere-1 loadable cassette"
+description = "Convert various SPHERE-1 related resources into different formats"
 requires-python = ">=3.9"
 dependencies = [
     "click>=8.1",
