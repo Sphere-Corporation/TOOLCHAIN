@@ -26,7 +26,7 @@ _There is a version of `bin2sphere` included in this repo dated October 9th 2023
  `convertEXE --version`
  * If you see the following: 
 
- `convertEXE (Version 1.0.2): Convert MC6800 assembled code into Sphere-1 loadable package and other formats.` 
+ `convertEXE (Version 1.0.3): Convert MC6800 assembled code into Sphere-1 loadable package and other formats.` 
 
 `(c) Andrew Shapton 2023, Portions (c) Ben Zotto 2023` all is well.
 
@@ -48,6 +48,7 @@ Converts a Sphere ROM binary file into a form suitable for the SPHERE-Firmware e
 
  * Virtual Cassette for Ben Zotto's Virtual Sphere-1 emulator
  * Javascript for manually embedding into the Virtual Sphere-1 emulator
+ * Virtual Cassette "V2" format for automatically embedding into the Virtual Sphere-1 emulator (experimental)
  * .WAV file for storing as a "true' cassette audio file
 
 ## How to use
@@ -60,16 +61,19 @@ Options:
   -c, --cassette TEXT  Cassette output file.
   -I, --in TEXT        Specify an input folder.  [required]
   -i, --input TEXT     Input MC6800 executable file.  [required]
-  -j, --js TEXT        Virtual Cassette Javascript (will have a '.js' extension).
+  -j, --js TEXT        Virtual Cassette Javascript (will have a '.js'
+                       extension).
   -m, --movebin        Move original binary to output location
   -n, --noheader       Don't produce headers for JS file.
   -O, --out TEXT       Specify an output folder.  [required]
   -p, --prefix TEXT    Cassette prefix.
   -s, --silent         Silent (no output).
   -t, --title TEXT     Cassette title (for Virtual Sphere).
-  -v, --vcass TEXT     Produce a virtual cassette.
+  -v, --vcass TEXT     Produce a virtual cassette in V1 format.
+  -v2, --vcass2 TEXT   Produce a virtual cassette in V2 format.
   --version            Show the version and exit.
   --help               Show this message and exit.
+
   ```
 
 # convertROM
