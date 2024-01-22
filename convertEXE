@@ -12,7 +12,8 @@
 # 1.0.2         XX-XXX-2023     ALS     Bugfixes and new functionality (see change history)
 # 1.0.3         22-JAN-2024     ALS     Introduced new functionality to generate virtual cassette in "V2 format".
 #                               ALS     Corrected some issues with inter-process communication and tidied up output
-
+# 1.0.3.1       22-JAN-2024     ALS     Corrected bugs: incorrectly left out a quote when writing EOT_BYTE to V2 VCassette file
+#                                                       incorrectly handled tapeid when running from different directory
 
 # Import system libraries
 import os
@@ -176,7 +177,7 @@ def write_binary_contentV2(file, binary_data, prefix):
         checksum = checksum + x;
 
     # Write the end of transmission byte
-    file.write(QUOTE + EOT_BYTE + QUOTE);
+    file.write(QUOTE + EOT_BYTE.replace(',','",'));
     c += 1
     c = check16(c, file);
 
@@ -209,9 +210,11 @@ def write_postamble(filehandle):
 def write_postambleV2(filehandle):
     filehandle.write(CR + "]" + CR + "}" + CR)
     
-def write_preambleV2(filehandle, filename, prefix, title, base, silent):
+def write_preambleV2(filehandle, prefix, title, base, fn):
+    f = fn.split(".")
     filehandle.write('{' + CR + 
                      '    "title":"' + title + '",' + CR + \
+                     '    "tapeid":"' + f[0] + '",' + CR  +                      
                      '    "label":"' + prefix + "/" + base + '",' + CR + \
                      '    "data" : [' + CR);
     
@@ -253,12 +256,12 @@ def output_hex(output, prefix, title, base, noheader,binary_data, silent, out):
         if not(silent):
             click.secho('         Output JS       : ' + get_basename(output), fg="green")
 
-def output_hexV2(output, prefix, title, base, binary_data, noheader, silent, out):
+def output_hexV2(output, prefix, title, base, binary_data, noheader, silent, out, fn):
     # The business end.....
     with open(output,'w') as file:
         
         # Output the first stage of information to allow the file to be acceptable to the load process within the VSphere V2 format
-        write_preambleV2(file, output, prefix, title, base, silent)
+        write_preambleV2(file, prefix, title, base, fn)
 
         # Output the binary content of the executable in the correct format
         write_binary_contentV2(file, binary_data, prefix)
@@ -381,11 +384,11 @@ def cli(base, _i, _input, js, movebin, prefix, title, _o, cassette, noheader, si
         convert_to_interim_format(prefix, _input, vcass_file)
         if not(silent):
             click.secho('         Binary Cassette : ' + get_basename(vcass_file) , fg="green")
-    
+
     # Do we need to produce a Virtual Sphere cassette in V2 format?    
     if vcass2  != "NONE":
         vcass2_file = _o + cassette + VCASS2_EXTENSION
-        output_hexV2(vcass2_file, prefix, title, base, binary_data, noheader, silent, _o)
+        output_hexV2(vcass2_file, prefix, title, base, binary_data, noheader, silent, _o, get_basename(vcass_file))
                     
     # Do we need to produce a WAV file for cassette?
 
