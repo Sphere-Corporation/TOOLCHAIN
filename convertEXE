@@ -41,7 +41,7 @@ See http://en.wikipedia.org/wiki/Kansas_City_standard
 """
 
 # Define software characteristics
-_version = '1.0.3';
+_version = '1.0.3.1';
 _package_name = 'convertEXE';
 _message = '%(package)s (Version %(version)s): Convert MC6800 assembled code into Sphere-1 loadable package and other formats.\n(c) Andrew Shapton 2023, Portions (c) Ben Zotto 2023';
 

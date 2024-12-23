@@ -74,6 +74,9 @@ Options:
   --version            Show the version and exit.
   --help               Show this message and exit.
 
+  Check out the Github page for more documentation at
+  https://github.com/Sphere-Corporation/CONVERT
+
   ```
 
 # convertROM
@@ -104,7 +107,7 @@ Options:
 
   Defaults:
   
-  | Argument  | Value |Notes|
-  |-----------|-------|-----|
-  |`extension`|  `.h` |Extension given to the output file if no other extension is given|
+  | Argument  | Value  |Notes|
+  |-----------|--------|-----|
+  |`ext`      |  `.h`  |Extension given to the output file if no other extension is given|
   |`base`     | `0xFE00`| Location of the base address of the ROM Image|
