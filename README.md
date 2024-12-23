@@ -79,7 +79,9 @@ Options:
 # convertROM
 ## Explanation
 
-Converts a raw, SPHERE-1 ROM Image into a format that can be used with a Project ORB ROM Emulator.
+Converts a raw, SPHERE-1 ROM Image into a format that can be used with either:
+- a Project ORB ROM Emulator
+- [Ben Zotto's Virtual SPHERE-1](https://sphere.computer/emulator/)
 
 ## How to use
 ```
@@ -88,6 +90,7 @@ Usage: convertROM [OPTIONS]
 Options:
   -i, --input TEXT    Specify a SPHERE-1 ROM file.  [required]
   -o, --output TEXT   Specify an output file.
+  -f, --format TEXT   Specify the output format. (required)
   -e, --ext TEXT      Extension for output file.
   -b, --base TEXT     Base address of ROM.
   -c, --comment TEXT  < 80 characters of comment for the ROM image (in
