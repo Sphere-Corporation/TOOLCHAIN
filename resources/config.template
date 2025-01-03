@@ -1,7 +1,7 @@
 
 # %FILENAME%
 #
-# Configuration for this build              <----- Edit the comment
+# %DESCRIPTION%
 #
 # (c) %NAME% %YEAR%
 #
@@ -10,7 +10,7 @@
 #
 # Date: %TODAY%
 
-title = "This build's configuration"        <----- Edit the title
+title = "%TITLE%"
 
 [Config]
 build        = "%SRC%/%SETTINGS%"          # Generic Settings

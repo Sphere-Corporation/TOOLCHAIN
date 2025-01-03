@@ -16,7 +16,7 @@
 #                                               Consolidated literals and abstracted code from main cli() function
 #                                               Fixed bug whereby supplying a build number caused the process to crash
 #                                               Eliminated all linting errors (including reducing complexity)
-# 0.0.3     22-JAN-2023     ALS     LANG-BF     Added support for VCassette V2 format
+# 0.0.3     22-JAN-2024     ALS     LANG-BF     Added support for VCassette V2 format
 #                                               Corrected some issues with inter-process communication and tidied up output
 # 0.0.4     01-MAY-2024     ALS     LANG-BF     Improved error handling with assembly errors
 # 
@@ -26,7 +26,7 @@
 #                                                 symbol of a single symbol file not being 
 #                                                 able to be loaded as a debug-ready symbol
 #
-# 0.0.7     29-SEP-2024     ALS     Standalone  Added functionality to enable a customised set of 
+# 0.0.7     03-JAN-2025     ALS     Standalone  Added functionality to enable a customised set of 
 #                                                 toolchain to be configured from prompts
 
 #
@@ -52,10 +52,13 @@ SUCCESSCOLOR = "green"
 
 DEFAULT_SYMBOL_CONFIG_FILE = "symbols.toml"
 
+# File extensions
+EXT_TOML = ".toml"
+
 # Define software characteristics
 _version = '0.0.7';
 _package_name = 'build';
-_copyright = '(c) 2023/2024 Andrew Shapton, Portions (c) 2023 Ben Zotto'
+_copyright = '(c) 2023-2025 Andrew Shapton, Portions (c) 2023 Ben Zotto'
 _message = '%(package)s (Version %(version)s): Sphere-1 Builder' + CR + _copyright;
 _generator = '{0} (Version {1}): Sphere-1 Builder'.format(_package_name,_version) + CR + '# ' + _copyright;
 
@@ -211,13 +214,16 @@ def initialise(silent, init):
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
                 exit()
                    
-        name = Prompt.ask("["+INFOCOLOR+"]What is your name: ")           
-        configfile_base = Prompt.ask("["+INFOCOLOR+"]Configuration file name (no extension): ", default="config")
-        genericfile_base = Prompt.ask("["+INFOCOLOR+"]Settings file name (no extension): ", default="build")
+        name = Prompt.ask("["+INFOCOLOR+"]What is your name ")           
+        configfile_base = Prompt.ask("["+INFOCOLOR+"]Configuration file name (no extension) ", default="config")
+        configfile_description = Prompt.ask("["+INFOCOLOR+"]Configuration file description (optional) ")
+        configfile_title = Prompt.ask("["+INFOCOLOR+"]Configuration file title  ",default="Main configuration file for " + init)
+        
+        genericfile_base = Prompt.ask("["+INFOCOLOR+"]Settings file name (no extension) ", default="build")
 
         
         while True:
-            system_prefix = Prompt.ask("["+INFOCOLOR+"]Prefix name (maximum 2 characters): ", default="XX")
+            system_prefix = Prompt.ask("["+INFOCOLOR+"]Prefix name (maximum 2 characters) ", default="XX")
             if len(system_prefix) != 2:
                 print("System Prefix {0} is should be 2 characters".format(system_prefix))
             else:
@@ -226,17 +232,16 @@ def initialise(silent, init):
                 else:
                     break
         # Add extensions to filenames
-        configfile = configfile_base + '.toml'
-        genericfile = genericfile_base + '.toml'
-        buildsettings = system_prefix.lower() + '.toml'
+        configfile = configfile_base + EXT_TOML
+        genericfile = genericfile_base + EXT_TOML
+        buildsettings = system_prefix.lower() + EXT_TOML
         
         
-        symbol_file = Confirm.ask("["+INFOCOLOR+"]Do you wish to have a default symbol file created? :")
+        symbol_file = Confirm.ask("["+INFOCOLOR+"]Do you wish to have a default symbol stucture file created? ")
         if symbol_file:
             symbol_text = 'symbolstruct = "{0}/{1}"        # Symbol Structure file'.format(init,DEFAULT_SYMBOL_CONFIG_FILE)
         else: 
             symbol_text = ''
-            
             
         # Make new directory to store configuration files (and ultimately program source) in
         try:  
@@ -252,6 +257,8 @@ def initialise(silent, init):
                 '%BUILDSETTINGS%': buildsettings,
                 '%SYMBOLFILE%': symbol_text,
                 '%PACKAGENAME%': _generator,
+                '%DESCRIPTION%': configfile_description,
+                '%TITLE%': configfile_title,
                 '%TODAY%': str(datetime.today().strftime('%Y-%m-%d')),
                 '%YEAR%':str(datetime.today().strftime('%Y'))
                     }
@@ -261,8 +268,8 @@ def initialise(silent, init):
         
 
         while True:
-            assembler_name = Prompt.ask("["+INFOCOLOR+"]Assembler executable name : ", default="sbasm")
-            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to assembler executable : ", default="")
+            assembler_name = Prompt.ask("["+INFOCOLOR+"]Assembler executable name  ", default="sbasm")
+            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to assembler executable  ", default="")
             if assembler_path[-1] != '/':
                 assembler_path = assembler_path + os.sep
         
@@ -286,13 +293,13 @@ def initialise(silent, init):
                 '%ASSEMBLER_PATH%': assembler_path
                     }
         # Create build settings file from the template    
-        buildfilecontent = replace_file_content(dict_replace,'resources' + os.sep + 'build.template',init + os.sep + genericfile)  
+        _buildfilecontent = replace_file_content(dict_replace,'resources' + os.sep + 'build.template',init + os.sep + genericfile)  
         
-        source_file = Prompt.ask("["+INFOCOLOR+"]Source File (including extension): ", default=system_prefix.lower() + '.asm')
-        assembled_file = Prompt.ask("["+INFOCOLOR+"]Target File (including extension): ", default=system_prefix.lower() + '.exe')
+        source_file = Prompt.ask("["+INFOCOLOR+"]Source File (including extension) ", default=system_prefix.lower() + '.asm')
+        assembled_file = Prompt.ask("["+INFOCOLOR+"]Target File (including extension) ", default=system_prefix.lower() + '.exe')
 
-        base_address = Prompt.ask("["+INFOCOLOR+"]Base Address : ", default="0200")
-        description = Prompt.ask("["+INFOCOLOR+"]Short Description : ")
+        base_address = Prompt.ask("["+INFOCOLOR+"]Base Address  ", default="0200")
+        description = Prompt.ask("["+INFOCOLOR+"]Short Description  ")
         dict_replace = {
                 '%NAME%': name,
                 '%FILENAME%': buildsettings,
@@ -308,8 +315,21 @@ def initialise(silent, init):
                     }
         
         # Create this build settings file from the template    
-        thisbuildfilecontent = replace_file_content(dict_replace,'resources' + os.sep + 'this.template',init + os.sep + buildsettings)  
+        _thisbuildfilecontent = replace_file_content(dict_replace,'resources' + os.sep + 'this.template',init + os.sep + buildsettings)  
         
+        if symbol_text != '':
+            # Create this build settings file from the template    
+            # Import Module
+            import shutil
+            
+            # Source and destination
+            src = 'resources' + os.sep + 'symbols.template'
+            dst = init + os.sep + 'symbols.toml'
+            
+            # Copy File
+            shutil.copy(src, dst)
+              
+            
         
 def cleanup(silent, buildASM):
         # Remove the build.asm file here
