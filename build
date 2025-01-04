@@ -43,6 +43,7 @@ import toml
 # Import 3rd party library
 import click
 
+
 # Define constants
 CR = '\n'
 ERRORCOLOR = "red"
@@ -242,7 +243,7 @@ def initialise(silent, init):
             symbol_text = 'symbolstruct = "{0}/{1}"        # Symbol Structure file'.format(init,DEFAULT_SYMBOL_CONFIG_FILE)
         else: 
             symbol_text = ''
-            
+    
         # Make new directory to store configuration files (and ultimately program source) in
         try:  
             os.mkdir(init)  
@@ -300,6 +301,29 @@ def initialise(silent, init):
 
         base_address = Prompt.ask("["+INFOCOLOR+"]Base Address  ", default="0200")
         description = Prompt.ask("["+INFOCOLOR+"]Short Description  ")
+        
+        # Get flags
+        flags='["'
+        javascript_header = Confirm.ask("["+INFOCOLOR+"]Do you want a Javascript header for the Virtual Sphere ?",default='y')
+        if javascript_header!='y':
+            flags = flags + "noheader" + '","'
+
+        movebin = Confirm.ask("["+INFOCOLOR+"]Do you want to move the binary to the assets location post-build ?",default='y')
+        if movebin:
+            flags = flags + "movebin" + '","'
+        
+        silent = Confirm.ask("["+INFOCOLOR+"]Do you want to have output during the build ?",default='y')
+        if silent!='y':
+            flags = flags + "silent" + '","'
+
+        rom = Confirm.ask("["+INFOCOLOR+"]Are you building a ROM ?",default='y')
+        if rom:
+            flags = flags + "rom" + '","'
+
+        flags = flags + '"]'
+        print(flags)
+        flags = flags.replace(',""','')
+        print(flags)
         dict_replace = {
                 '%NAME%': name,
                 '%FILENAME%': buildsettings,
@@ -509,7 +533,6 @@ def assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile):
                 click.secho("Assembly failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
                 exit();    
               
-
 @click.command()
 @click.option("--config","-c", help="Configuration file",required=False,default="config.toml")
 @click.option("--init","-i", help="Initialise build toolchain",required=False,default="")
