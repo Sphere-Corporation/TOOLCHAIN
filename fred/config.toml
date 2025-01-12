@@ -16,4 +16,3 @@ title = "Main configuration file for fred"
 [Config]
 build        = "fred/build.toml"          # Generic Settings
 this         = "fred/xx.toml"             # Build specific settings
-symbolstruct = "fred/symbols.toml"        # Symbol Structure file

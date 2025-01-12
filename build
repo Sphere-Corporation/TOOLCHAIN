@@ -313,7 +313,9 @@ def initialise(silent, init):
             flags = flags + "movebin" + '","'
         
         silent = Confirm.ask("["+INFOCOLOR+"]Do you want to have output during the build ?",default='y')
-        if silent!='y':
+        if silent:
+            pass
+        else:
             flags = flags + "silent" + '","'
 
         rom = Confirm.ask("["+INFOCOLOR+"]Are you building a ROM ?",default='y')
@@ -335,7 +337,8 @@ def initialise(silent, init):
                 '%PACKAGENAME%': _generator,
                 '%TODAY%': str(datetime.today().strftime('%Y-%m-%d')),
                 '%YEAR%':str(datetime.today().strftime('%Y')),
-                '%BASE_ADDRESS%': base_address
+                '%BASE_ADDRESS%': base_address,
+                '%FLAGS%': flags
                     }
         
         # Create this build settings file from the template    
