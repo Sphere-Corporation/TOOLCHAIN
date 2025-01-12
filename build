@@ -53,10 +53,6 @@ SUCCESSCOLOR = "green"
 
 DEFAULT_SYMBOL_CONFIG_FILE = "symbols.toml"
 
-# Define the name of the convertEXE and convertROM executables
-convertEXEName = "convertEXE"
-convertROMName = "convertROM"
-
 # File extensions
 EXT_TOML = ".toml"
 
@@ -327,29 +323,9 @@ def initialise(silent, init):
             flags = flags + "rom" + '","'
 
         flags = flags + '"]'
+        print(flags)
         flags = flags.replace(',""','')
-
-        while True:
-            converttools_path = Prompt.ask("["+INFOCOLOR+"]Full path to convertTools  ", default="")
-            if converttools_path[-1] != '/':
-                converttools_path = converttools_path + os.sep
-        
-            if does_folder_exist(converttools_path):
-                pass
-            else:
-                print("ConvertTools path {0} does not exist".format(converttools_path))
-
-            if does_file_exist(converttools_path + convertEXEName):
-                pass
-            else:
-                click.secho("Executable {0} does not exist in {1}".format(convertEXEName,converttools_path), fg=ERRORCOLOR)
-
-            if does_file_exist(converttools_path + convertROMName):
-                break
-            else:
-                click.secho("Executable {0} does not exist in {1}".format(convertROMName,converttools_path), fg=ERRORCOLOR)
-        
-
+        print(flags)
         dict_replace = {
                 '%NAME%': name,
                 '%FILENAME%': buildsettings,
@@ -362,8 +338,7 @@ def initialise(silent, init):
                 '%TODAY%': str(datetime.today().strftime('%Y-%m-%d')),
                 '%YEAR%':str(datetime.today().strftime('%Y')),
                 '%BASE_ADDRESS%': base_address,
-                '%FLAGS%': flags,
-                '%CONVERTTOOLSDIR%': converttools_path
+                '%FLAGS%': flags
                     }
         
         # Create this build settings file from the template    
@@ -410,7 +385,7 @@ def get_symbolstructure(config, THIS_CONFIG_FILE, assembler):
     return symbolName, symbolValue, symbolValueFormat, preamble, postamble
              
 def get_parameters(config, THIS_CONFIG_FILE):
-    convertTOOLSDir   = default_key(config["Locations"], "convertTOOLSDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
+    convertEXEDir   = default_key(config["Locations"], "convertEXEDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
     srcDir          = default_key(config["Locations"], "srcDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
     outputDir       = default_key(config["Locations"], "outputDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
     
@@ -432,7 +407,7 @@ def get_parameters(config, THIS_CONFIG_FILE):
     symbolFile      = default_key(config["Symbols"], "symbolFile", "N/A", False, "Symbols", THIS_CONFIG_FILE)
     defaultSymbols  = default_key(config["Symbols"], "defaultSymbols", "N/A", False, "Symbols", THIS_CONFIG_FILE)
 
-    return     convertTOOLSDir, srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, cassette,\
+    return     convertEXEDir, srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, cassette,\
                 buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols
     
 def get_cmds(vcass, vcass2, js, cassette):
@@ -618,7 +593,7 @@ def cli(config, init, build, silent):
             get_symbolstructure(symbol_config, THIS_CONFIG_FILE, assembler)
         
         # Return main build parameters
-        convertTOOLSDir, srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, \
+        convertEXEDir, srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, \
         cassette, buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols = get_parameters(config, THIS_CONFIG_FILE)
         
         ''' Ensure that the NLAfterBuildVersion is the correct format for usage '''
@@ -641,7 +616,7 @@ def cli(config, init, build, silent):
         # Create the commands to append to the command line
         all_cmds = get_cmds(vcass, vcass2, js, cassette)   
                             
-        command = convertTOOLSDir + 'convertEXE --input ' + assembledFile +  ' --prefix ' + prefix + ' --base ' + base + ' --title ' + title + all_cmds + ' --out ' + outputDir + ' --in ' + srcDir + ' ' + fl
+        command = convertEXEDir + 'convertEXE --input ' + assembledFile +  ' --prefix ' + prefix + ' --base ' + base + ' --title ' + title + all_cmds + ' --out ' + outputDir + ' --in ' + srcDir + ' ' + fl
         if not(silent):
             click.secho('Converting to other formats.' + CR, fg=INFOCOLOR)
 
