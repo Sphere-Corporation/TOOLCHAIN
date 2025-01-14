@@ -37,8 +37,7 @@ flags           = %FLAGS%
 # <----- Edit below here ----->
 
 [Locations]
-convertTOOLSDir = "%CONVERTTOOLSDIR%"     # Location of convert tools
-srcDir          = "......../src/"              # Location of assembler source code
+srcDir          = "%SRCDIR%"              # Location of assembler source code
 outputDir       = "......../ASSETS/"           # Location of target assets
 
 [Miscellaneous]
