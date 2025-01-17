@@ -33,12 +33,11 @@ cassette        = "%PREFIXL%"              # Filename for .wav file for cassette
                     
 flags           = %FLAGS%
 
-
-# <----- Edit below here ----->
-
 [Locations]
 srcDir          = "%SRCDIR%"              # Location of assembler source code
-outputDir       = "......../ASSETS/"           # Location of target assets
+outputDir       = "%OUTDIR%"           # Location of target assets
+
+# <----- Edit below here ----->
 
 [Miscellaneous]
 buildASM        = "build.asm"       # Name of build file (with version etc inside)

@@ -223,17 +223,35 @@ def initialise(silent, init):
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
                 exit()
             else:
-                # Make new directory to store configuration files (and ultimately program source) in
+                # Make new directory to store source files in
                 try:  
                     os.mkdir(full_source_path)  
                 except OSError:  
                     pass  
         else:
-            # Make new directory to store configuration files (and ultimately program source) in
+            # Make new directory to store source files in
                 try:  
                     os.mkdir(full_source_path)  
                 except OSError:  
                     pass 
+        output_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the output files ? ",default='ASSETS')
+        if does_folder_exist(output_dir):
+            info_message = CR + "Directory: \'{0}\' already exists".format(output_dir)
+            if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
+                exit()
+            else:
+                # Make new directory to store outputfiles files in
+                try:  
+                    os.mkdir(output_dir)  
+                except OSError:  
+                    pass  
+        else:
+            # Make new directory to store configuration files (and ultimately program source) in
+                try:  
+                    os.mkdir(output_dir)  
+                except OSError:  
+                    pass 
+
         name = Prompt.ask("["+INFOCOLOR+"]What is your name ")           
         configfile_base = Prompt.ask("["+INFOCOLOR+"]Configuration file name (no extension) ", default="config")
         configfile_description = Prompt.ask("["+INFOCOLOR+"]Configuration file description (optional) ")
@@ -356,7 +374,9 @@ def initialise(silent, init):
                 '%YEAR%':str(datetime.today().strftime('%Y')),
                 '%BASE_ADDRESS%': base_address,
                 '%FLAGS%': flags,
-                '%SRCDIR%': full_source_path
+                '%SRCDIR%': full_source_path,
+                '%OUTDIR%': output_dir
+
                     }
         
         # Create this build settings file from the template    
