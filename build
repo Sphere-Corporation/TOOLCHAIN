@@ -339,6 +339,36 @@ def initialise(silent, init):
         base_address = Prompt.ask("["+INFOCOLOR+"]Base Address  ", default="0200")
         description = Prompt.ask("["+INFOCOLOR+"]Short Description  ")
         
+        # Get Build information details
+        buildinfo_file = Prompt.ask("["+INFOCOLOR+"]Build info File ", default='build.asm')
+        if buildinfo_file[-4:] != '.asm':
+            buildinfo_file = buildinfo_file + '.asm'
+
+        buildJustify = Prompt.ask("["+INFOCOLOR+"]Build Justify (L/C/R) ", default='C')
+        while buildJustify not in ['L','C','R']:
+            buildJustify = Prompt.ask("["+INFOCOLOR+"]Build Justify (L/C/R) ", default='C')
+
+        NLAfterBuildVersion = Confirm.ask("["+INFOCOLOR+"]New Line after Build Version ",default='y')
+        if NLAfterBuildVersion:
+            NLAfterBuildVersion = "true"
+        else:
+            NLAfterBuildVersion = "false"
+
+        add_symbol = Confirm.ask("["+INFOCOLOR+"]Do you want to add a symbol file? ",default='y')
+        symbols = []
+
+        if add_symbol:
+            # Get Symbol file information details
+            symbol_file = Prompt.ask("["+INFOCOLOR+"]Symbol info File (full path) ", default='SYMBOLS.SYM')
+            while True:
+                symbol = Prompt.ask("["+INFOCOLOR+"]Symbol to include in debug list on startup ", default='START')
+                symbols.append(symbol)
+                if Confirm.ask("["+INFOCOLOR+"]Do you want to add another symbol? ",default='y') is False:
+                    break
+        else:
+            symbol_file = ''
+
+        
         # Get flags
         flags='["'
         javascript_header = Confirm.ask("["+INFOCOLOR+"]Do you want a Javascript header for the Virtual Sphere ?",default='y')
@@ -375,8 +405,12 @@ def initialise(silent, init):
                 '%BASE_ADDRESS%': base_address,
                 '%FLAGS%': flags,
                 '%SRCDIR%': full_source_path,
-                '%OUTDIR%': output_dir
-
+                '%OUTDIR%': output_dir,
+                '%BUILDINFOFILE%': buildinfo_file,
+                '%BUILDJUSTIFY%': buildJustify,
+                '%NLAFTERBUILDVERSION%': NLAfterBuildVersion,
+                '%SYMBOLFILE%': symbol_file,
+                '%SYMBOLS%': str(symbols)
                     }
         
         # Create this build settings file from the template    
