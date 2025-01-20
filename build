@@ -56,6 +56,9 @@ DEFAULT_SYMBOL_CONFIG_FILE = "symbols.toml"
 
 # File extensions
 EXT_TOML = ".toml"
+ASM_FILE = ".asm"
+EXE_FILE = ".exe"
+
 
 # Define software characteristics
 _version = '0.0.7';
@@ -116,6 +119,14 @@ def does_file_exist(filename):
     except FileNotFoundError:            
         return False
     
+def make_directory(directory):
+    ''' Make a directory '''
+    try:  
+        os.mkdir(directory)  
+    except OSError:  
+        return False
+    return True
+
 def CamelCase(s):
     ''' Convert a string to camel case '''
     newString = ''
@@ -224,16 +235,13 @@ def initialise(silent, init):
                 exit()
             else:
                 # Make new directory to store source files in
-                try:  
-                    os.mkdir(full_source_path)  
-                except OSError:  
-                    pass  
+                if not make_directory(full_source_path):
+                     pass
         else:
             # Make new directory to store source files in
-                try:  
-                    os.mkdir(full_source_path)  
-                except OSError:  
-                    pass 
+            if not make_directory(full_source_path):
+                pass
+
         output_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the output files ? ",default='ASSETS')
         if does_folder_exist(output_dir):
             info_message = CR + "Directory: \'{0}\' already exists".format(output_dir)
@@ -241,16 +249,12 @@ def initialise(silent, init):
                 exit()
             else:
                 # Make new directory to store outputfiles files in
-                try:  
-                    os.mkdir(output_dir)  
-                except OSError:  
-                    pass  
+                if not make_directory(output_dir):
+                    pass
         else:
-            # Make new directory to store configuration files (and ultimately program source) in
-                try:  
-                    os.mkdir(output_dir)  
-                except OSError:  
-                    pass 
+            # Make new directory to store outputfiles files in
+            if not make_directory(output_dir):
+                pass
 
         name = Prompt.ask("["+INFOCOLOR+"]What is your name ")           
         configfile_base = Prompt.ask("["+INFOCOLOR+"]Configuration file name (no extension) ", default="config")
@@ -282,10 +286,9 @@ def initialise(silent, init):
             symbol_text = ''
     
         # Make new directory to store configuration files (and ultimately program source) in
-        try:  
-            os.mkdir(init)  
-        except OSError:  
-            pass  
+                        
+        if not make_directory(init):
+            pass
         
         dict_replace = {
                 '%NAME%': name,
@@ -333,16 +336,16 @@ def initialise(silent, init):
         # Create build settings file from the template    
         _buildfilecontent = replace_file_content(dict_replace,'resources' + SEP + 'build.template',init + SEP + genericfile)  
         
-        source_file = Prompt.ask("["+INFOCOLOR+"]Source File (including extension) ", default=system_prefix.lower() + '.asm')
-        assembled_file = Prompt.ask("["+INFOCOLOR+"]Target File (including extension) ", default=system_prefix.lower() + '.exe')
+        source_file = Prompt.ask("["+INFOCOLOR+"]Source File (including extension) ", default=system_prefix.lower() + ASM_FILE)
+        assembled_file = Prompt.ask("["+INFOCOLOR+"]Target File (including extension) ", default=system_prefix.lower() + EXE_FILE)
 
         base_address = Prompt.ask("["+INFOCOLOR+"]Base Address  ", default="0200")
         description = Prompt.ask("["+INFOCOLOR+"]Short Description  ")
         
         # Get Build information details
-        buildinfo_file = Prompt.ask("["+INFOCOLOR+"]Build info File ", default='build.asm')
-        if buildinfo_file[-4:] != '.asm':
-            buildinfo_file = buildinfo_file + '.asm'
+        buildinfo_file = Prompt.ask("["+INFOCOLOR+"]Build info File ", default='build' + ASM_FILE)
+        if buildinfo_file[-4:] != ASM_FILE:
+            buildinfo_file = buildinfo_file + ASM_FILE
 
         buildJustify = Prompt.ask("["+INFOCOLOR+"]Build Justify (L/C/R) ", default='C')
         while buildJustify not in ['L','C','R']:
