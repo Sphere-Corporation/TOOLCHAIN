@@ -226,7 +226,16 @@ def initialise(silent, init):
             info_message = CR + "Directory: \'{0}\' already exists".format(init)
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
                 exit()
-                   
+
+        tools_dir = Prompt.ask("["+INFOCOLOR+"]What is the absolute path of the toolchain ? ")
+        if does_folder_exist(tools_dir):
+            pass
+        else:
+            # Make new directory to store outputfiles files in
+            click.secho("The toolchain is not installed", fg=ERRORCOLOR)
+            exit()                
+
+                               
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
         full_source_path = init + SEP + source_dir
         if does_folder_exist(full_source_path):
@@ -409,6 +418,7 @@ def initialise(silent, init):
                 '%FLAGS%': flags,
                 '%SRCDIR%': full_source_path,
                 '%OUTDIR%': output_dir,
+                '%TOOLSDIR%': tools_dir,
                 '%BUILDINFOFILE%': buildinfo_file,
                 '%BUILDJUSTIFY%': buildJustify,
                 '%NLAFTERBUILDVERSION%': NLAfterBuildVersion,
@@ -639,7 +649,7 @@ def cli(config, init, build, silent):
         
         MASTER_CONFIG_FILE  = default_key(config["Config"], "build", "", True,'Config',MAIN_CONFIG_FILE) # All of these keys have been checked and found to exist
         THIS_CONFIG_FILE    = default_key(config["Config"], "this", "", True,'Config',MAIN_CONFIG_FILE)  # so no defaults are required.
-        SYMBOL_CONFIG_FILE  = default_key(config["Config"], "symbolstruct", DEFAULT_SYMBOL_CONFIG_FILE, True,'Config',MAIN_CONFIG_FILE)  
+        SYMBOL_CONFIG_FILE  = default_key(config["Config"], "symbolstruct", DEFAULT_SYMBOL_CONFIG_FILE, False,'Config',MAIN_CONFIG_FILE)  
         
         # Check supply of main configuration file
         bsconfig = open_configuration_file(MASTER_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Build Setup');
@@ -659,17 +669,23 @@ def cli(config, init, build, silent):
         validate_section(config,"BuildParameters", silent,32, THIS_CONFIG_FILE)
         validate_section(config,"Miscellaneous", silent,32, THIS_CONFIG_FILE)
         validate_section(config,"Symbols", silent,32, THIS_CONFIG_FILE)
-            
-        # Validate the relevant assembler section of the symbol structure file
-        symbol_config = open_configuration_file(SYMBOL_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Symbol Structure for assembler');
-        validate_section(symbol_config,assembler, silent,1, THIS_CONFIG_FILE)
-        symbolName, symbolValue, symbolValueFormat, preamble, postamble = \
-            get_symbolstructure(symbol_config, THIS_CONFIG_FILE, assembler)
-        
+
+        do_symbol_file = True
+
+        if not does_file_exist(SYMBOL_CONFIG_FILE):   
+            click.secho("\n** No Symbol File {0} provided - symbols will not be loaded. **\n".format(SYMBOL_CONFIG_FILE), fg=ERRORCOLOR)
+            do_symbol_file = False
+        else:    
+            # Validate the relevant assembler section of the symbol structure file
+            symbol_config = open_configuration_file(SYMBOL_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Symbol Structure for assembler');
+            validate_section(symbol_config,assembler, silent,1, THIS_CONFIG_FILE)
+            symbolName, symbolValue, symbolValueFormat, preamble, postamble = \
+                get_symbolstructure(symbol_config, THIS_CONFIG_FILE, assembler)
         # Return main build parameters
+        print(THIS_CONFIG_FILE)
         srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, \
         cassette, buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols = get_parameters(config, THIS_CONFIG_FILE)
-        
+
         ''' Ensure that the NLAfterBuildVersion is the correct format for usage '''
         NLAfterBuildVersion = CamelCase(str(NLAfterBuildVersion))
         
@@ -679,8 +695,9 @@ def cli(config, init, build, silent):
         ''' Assemble the source code '''
         assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile  )
 
-        ''' Create the symbol file for inclusion in the debugger '''    
-        create_symbol_file(prefix, symbolFile, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, SYMBOL_FILE_DOES_NOT_EXIST, defaultSymbols);
+        if do_symbol_file:
+            ''' Create the symbol file for inclusion in the debugger '''    
+            create_symbol_file(prefix, symbolFile, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, SYMBOL_FILE_DOES_NOT_EXIST, defaultSymbols);
 
         # Create the flags for the command line
         fl = ""

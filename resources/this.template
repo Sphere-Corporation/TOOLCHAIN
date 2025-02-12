@@ -36,6 +36,7 @@ flags           = %FLAGS%
 [Locations]
 srcDir          = "%SRCDIR%"              # Location of assembler source code
 outputDir       = "%OUTDIR%"           # Location of target assets
+toolsDir        = "%TOOLSDIR%"           # Location of supporting tools
 
 [Miscellaneous]
 buildASM        = "%BUILDINFOFILE%"       # Name of build file (with version etc inside)
