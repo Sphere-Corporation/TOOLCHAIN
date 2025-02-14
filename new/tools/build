@@ -245,12 +245,11 @@ def initialise(silent, init):
             # Make new directory to store toolchain files in
             if not make_directory(dst_dir):
                 pass
-            for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere']:
+            for filename in ['convertEXE','convertROM','build','encode_tape.py','bin2sphere']:
                 src = src_dir + filename
                 dst =  dst_dir+ filename
-                
+                print(src,dst)
                 shutil.copy(src, dst)
-            shutil.copy(src_dir + SEP + 'build', init)
             tools_dir = dst_dir
                                
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
