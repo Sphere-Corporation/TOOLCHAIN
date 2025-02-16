@@ -9,10 +9,19 @@
 title = "Symbol table structure"
 
 [sbasm]
-# Symbol Structure for sbasm3
-# https://sbprojects/sbasm3
+assemblerHomeURL    = "https://www.sbprojects.net/sbasm/" # URL for obtaining this assembler.
 symbolName          = 1           # Name of symbol and location in row
 symbolValue         = 3           # Value of symbol and location in row
+symbolValueFormat   = "?????XXXX" # Format of Symbol:
+                                  #   ? indicates character not of interest (to be stripped out) 
+                                  #   X indicates character of interest
+preamble            = 0           # Any rows to ignore at the beginning of the symbol file
+postamble           = 0           # Any rows to ignore at the end of the symbol file
+
+[as0]
+assemblerHomeURL    = "https://github.com/JimInCA/motorola-6800-assembler" # URL for obtaining this assembler.
+symbolName          = 1           # Name of symbol and location in row
+symbolValue         = 2           # Value of symbol and location in row
 symbolValueFormat   = "?????XXXX" # Format of Symbol:
                                   #   ? indicates character not of interest (to be stripped out) 
                                   #   X indicates character of interest

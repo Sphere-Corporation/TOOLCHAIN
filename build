@@ -242,6 +242,9 @@ def initialise(silent, init):
 
             src_dir = tools_dir + SEP
             dst_dir= init + SEP + 'tools' + SEP
+            
+            tools_dst_dir =  'tools' 
+
             # Make new directory to store toolchain files in
             if not make_directory(dst_dir):
                 pass
@@ -251,10 +254,11 @@ def initialise(silent, init):
                 
                 shutil.copy(src, dst)
             shutil.copy(src_dir + SEP + 'build', init)
-            tools_dir = dst_dir
+            
+
                                
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
-        full_source_path = init + SEP + source_dir
+        full_source_path = source_dir
         if does_folder_exist(full_source_path):
             info_message = CR + "Directory: \'{0}\' already exists".format(full_source_path)
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
@@ -269,17 +273,17 @@ def initialise(silent, init):
                 pass
 
         output_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the output files ? ",default='ASSETS')
-        if does_folder_exist(output_dir):
+        if does_folder_exist(init + SEP + output_dir):
             info_message = CR + "Directory: \'{0}\' already exists".format(output_dir)
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
                 exit()
             else:
                 # Make new directory to store outputfiles files in
-                if not make_directory(output_dir):
+                if not make_directory(init + SEP + output_dir):
                     pass
         else:
             # Make new directory to store outputfiles files in
-            if not make_directory(output_dir):
+            if not make_directory(init + SEP + output_dir):
                 pass
 
         name = Prompt.ask("["+INFOCOLOR+"]What is your name ")           
@@ -435,7 +439,7 @@ def initialise(silent, init):
                 '%FLAGS%': flags,
                 '%SRCDIR%': full_source_path,
                 '%OUTDIR%': output_dir,
-                '%TOOLSDIR%': tools_dir,
+                '%TOOLSDIR%': tools_dst_dir,
                 '%BUILDINFOFILE%': buildinfo_file,
                 '%BUILDJUSTIFY%': buildJustify,
                 '%NLAFTERBUILDVERSION%': NLAfterBuildVersion,
@@ -489,6 +493,7 @@ def get_symbolstructure(config, THIS_CONFIG_FILE, assembler):
 def get_parameters(config, THIS_CONFIG_FILE):
     srcDir          = default_key(config["Locations"], "srcDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
     outputDir       = default_key(config["Locations"], "outputDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
+    tools_Dir       = default_key(config["Locations"], "toolsDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
     
     sourceFile      = default_key(config["BuildParameters"], "sourceFile", "N/A",True,"BuildParameters", THIS_CONFIG_FILE)                
     assembledFile   = default_key(config["BuildParameters"], "assembledFile", "N/A", True,"BuildParameters", THIS_CONFIG_FILE)
@@ -509,7 +514,7 @@ def get_parameters(config, THIS_CONFIG_FILE):
     defaultSymbols  = default_key(config["Symbols"], "defaultSymbols", "N/A", False, "Symbols", THIS_CONFIG_FILE)
 
     return     srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, cassette,\
-                buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols
+                buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols, tools_Dir
     
 def get_cmds(vcass, vcass2, js, cassette):
     ''' Gather together the list of commands '''
@@ -701,7 +706,7 @@ def cli(config, init, build, silent):
         # Return main build parameters
         print(THIS_CONFIG_FILE)
         srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, \
-        cassette, buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols = get_parameters(config, THIS_CONFIG_FILE)
+        cassette, buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols,toolsDir = get_parameters(config, THIS_CONFIG_FILE)
 
         ''' Ensure that the NLAfterBuildVersion is the correct format for usage '''
         NLAfterBuildVersion = CamelCase(str(NLAfterBuildVersion))
@@ -724,7 +729,7 @@ def cli(config, init, build, silent):
         # Create the commands to append to the command line
         all_cmds = get_cmds(vcass, vcass2, js, cassette)   
                             
-        command = '.' + SEP + 'convertEXE --input ' + assembledFile +  ' --prefix ' + prefix + ' --base ' + base + ' --title ' + title + all_cmds + ' --out ' + outputDir + ' --in ' + srcDir + ' ' + fl
+        command = toolsDir + SEP + 'convertEXE --input ' + assembledFile +  ' --prefix ' + prefix + ' --base ' + base + ' --title ' + title + all_cmds + ' --out ' + outputDir + ' --in ' + srcDir + ' ' + fl
         if not(silent):
             click.secho('Converting to other formats.' + CR, fg=INFOCOLOR)
 
