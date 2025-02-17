@@ -3,7 +3,9 @@
 # build
 #
 # Build toolchain for Sphere-1 Executables
-# Author : Andrew Shapton - Portions (c) Ben Zotto 2023
+# Author : Andrew Shapton 
+#        : Portions (c) Ben Zotto 2023               
+#        :          (c) William Bahn 2010
 # Copyright (C) 2023-2025
 #
 # Requires Python 3.9 or newer
@@ -63,7 +65,7 @@ EXE_FILE = ".exe"
 # Define software characteristics
 _version = '0.0.7';
 _package_name = 'build';
-_copyright = '(c) 2023-2025 Andrew Shapton, Portions (c) 2023 Ben Zotto'
+_copyright = '(c) 2023-2025 Andrew Shapton, Portions (c) 2010 William Bahn, 2023 Ben Zotto'
 _message = '%(package)s (Version %(version)s): Sphere-1 Builder' + CR + _copyright;
 _generator = '{0} (Version {1}): Sphere-1 Builder'.format(_package_name,_version) + CR + '# ' + _copyright;
 
