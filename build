@@ -34,11 +34,16 @@
 #
 # Requires convertEXE 1.03 or above
 #          convertROM 1.3 or above
-# 
+#          srec2bin   1.1 or above 
+#          bin2sphere 1.1 or above
+#          encode_tape.py (included but needs to be compiled)
+#          
+#          Python 3.9 or newer
 
 # Import system libraries
 import os
-
+import shutil
+        
 from datetime import datetime   
 import subprocess
 import toml 
@@ -47,35 +52,44 @@ import toml
 import click
 
 
-# Define constants
-CR = '\n'
-ERRORCOLOR = "red"
-INFOCOLOR = "blue"
-CHANGECOLOR = "yellow"
-SUCCESSCOLOR = "green"
+# Platform constants
 SEP = os.sep
-DEFAULT_SYMBOL_CONFIG_FILE = "symbols.toml"
 
 # File extensions
 EXT_TOML = ".toml"
 ASM_FILE = ".asm"
 EXE_FILE = ".exe"
+EXT_TPLT = ".template"
 
+# File constants
+DEFAULT_RESOURCES_LOCATION = "resources"
+DEFAULT_SYMBOL_CONFIG_ROOT = "symbols"
+
+DEFAULT_SYMBOL_CONFIG_FILE = DEFAULT_SYMBOL_CONFIG_ROOT + EXT_TOML
+DEFAULT_SYMBOL_TEMPLATE_FILE = DEFAULT_SYMBOL_CONFIG_ROOT + EXT_TPLT
+
+# Program constants
+CR = '\n'
+ERRORCOLOR = "red"
+INFOCOLOR = "blue"
+CHANGECOLOR = "yellow"
+SUCCESSCOLOR = "green"
 
 # Define software characteristics
 _version = '0.0.7';
 _package_name = 'build';
-_copyright = '(c) 2023-2025 Andrew Shapton, Portions (c) 2010 William Bahn, 2023 Ben Zotto'
+_copyright = '(c) 2023-2025 Andrew Shapton, Portions (c) 2010 William Bahn, 2010 David Beazley, 2023 Ben Zotto'
 _message = '%(package)s (Version %(version)s): Sphere-1 Builder' + CR + _copyright;
 _generator = '{0} (Version {1}): Sphere-1 Builder'.format(_package_name,_version) + CR + '# ' + _copyright;
 
 # Define messages
-CONFIG_FILE_DOES_NOT_EXIST  = "Configuration file {0} does not exist"
-KEY_DOES_NOT_EXIST          = "Configuration Key: {0} does not exist."
-SECTION_DOES_NOT_EXIST      = "Configuration Section: {0} does not exist within {1}."
-COULDNT_DELETE              = "Could not delete {0}; file does not exist"
-SYMBOL_FILE_DOES_NOT_EXIST  = "Symbol file {0} does not exist"
-
+GENERIC_DOES_NOT_EXIST      = "{0} does not exist"
+CONFIG_FILE_DOES_NOT_EXIST  = "Configuration file "  + GENERIC_DOES_NOT_EXIST
+KEY_DOES_NOT_EXIST          = "Configuration Key: " + GENERIC_DOES_NOT_EXIST
+SECTION_DOES_NOT_EXIST      = "Configuration Section: " + GENERIC_DOES_NOT_EXIST + " within {1}."
+COULDNT_DELETE              = "Could not delete "  + GENERIC_DOES_NOT_EXIST
+SYMBOL_FILE_DOES_NOT_EXIST  = "Symbol file " + GENERIC_DOES_NOT_EXIST
+SYMBOL_BASE_FILE_DOES_NOT_EXIST = "Base symbol configuration file " + GENERIC_DOES_NOT_EXIST
 
 def open_configuration_file(CFILE, NOT_EXIST, silent, literal):
     ''' Check supply of a configuration file '''
@@ -108,6 +122,15 @@ def replace_file_content(dict_replace, template_file, target_file):
     target_file_open.write(target)
     target_file_open.close()
     return target
+
+def replace_symbols(dict_replace, content):
+    print(dict_replace)
+    from re import sub
+    for check, replacer in list(dict_replace.items()):
+        content = sub(check, replacer, content)
+        content = content.replace(check, replacer)
+    print(content)
+    return content
 
 def does_folder_exist(folder_name):
     ''' Check to see if a folder exists '''
@@ -250,15 +273,13 @@ def initialise(silent, init):
             # Make new directory to store toolchain files in
             if not make_directory(dst_dir):
                 pass
-            for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere']:
+            for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere','srec2bin']:
                 src = src_dir + filename
                 dst =  dst_dir+ filename
                 
                 shutil.copy(src, dst)
             shutil.copy(src_dir + SEP + 'build', init)
-            
-
-                               
+               
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
         full_source_path = source_dir
         if does_folder_exist(full_source_path):
@@ -295,7 +316,6 @@ def initialise(silent, init):
         
         genericfile_base = Prompt.ask("["+INFOCOLOR+"]Settings file name (no extension) ", default="build")
 
-        
         while True:
             system_prefix = Prompt.ask("["+INFOCOLOR+"]Prefix name (maximum 2 characters) ", default="XX")
             if len(system_prefix) != 2:
@@ -309,14 +329,10 @@ def initialise(silent, init):
         configfile = configfile_base + EXT_TOML
         genericfile = genericfile_base + EXT_TOML
         buildsettings = system_prefix.lower() + EXT_TOML
-        
-        
-        symbol_file = Confirm.ask("["+INFOCOLOR+"]Do you wish to have a default symbol stucture file created? ")
-        if symbol_file:
-            symbol_text = 'symbolstruct = "{0}/{1}"        # Symbol Structure file'.format(init,DEFAULT_SYMBOL_CONFIG_FILE)
-        else: 
-            symbol_text = ''
     
+        full_symbolfile = 'symbolstruct = "{0}/{1}"        # Symbol Structure file'.format(init,DEFAULT_SYMBOL_CONFIG_FILE)
+        full_symbolfilename = DEFAULT_RESOURCES_LOCATION + SEP + DEFAULT_SYMBOL_TEMPLATE_FILE
+
         # Make new directory to store configuration files (and ultimately program source) in
                         
         if not make_directory(init):
@@ -328,7 +344,7 @@ def initialise(silent, init):
                 '%SETTINGS%': genericfile,
                 '%SRC%': init,
                 '%BUILDSETTINGS%': buildsettings,
-                '%SYMBOLFILE%': symbol_text,
+                '%SYMBOLFILE%': full_symbolfile,
                 '%PACKAGENAME%': _generator,
                 '%DESCRIPTION%': configfile_description,
                 '%TITLE%': configfile_title,
@@ -337,7 +353,7 @@ def initialise(silent, init):
                     }
  
         # Create configuration file from the template    
-        configfilecontent = replace_file_content(dict_replace,'resources' + SEP + 'config.template',init + SEP + configfile)  
+        configfilecontent = replace_file_content(dict_replace,DEFAULT_RESOURCES_LOCATION + SEP + 'config.template',init + SEP + configfile)  
         
 
         while True:
@@ -356,17 +372,26 @@ def initialise(silent, init):
             else:
                 click.secho("Assembler executable {0} does not exist in {1}".format(assembler_name,assembler_path), fg=ERRORCOLOR)
         
+        symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File');
+        post_assemble_line   = default_key(symbol_config[assembler_name], "postassemble", "None", True, assembler_name, full_symbolfilename)
+
         dict_replace = {
                 '%NAME%': name,
-                '%FILENAME%': genericfile,
+                '%FILENAME%': configfile,
+                '%SETTINGS%': genericfile,
+                '%SRC%': init,
+                '%BUILDSETTINGS%': buildsettings,
+                '%SYMBOLFILE%': full_symbolfile,
                 '%PACKAGENAME%': _generator,
+                '%DESCRIPTION%': configfile_description,
+                '%TITLE%': configfile_title,
                 '%TODAY%': str(datetime.today().strftime('%Y-%m-%d')),
                 '%YEAR%':str(datetime.today().strftime('%Y')),
-                '%ASSEMBLER%': assembler_name,
-                '%ASSEMBLER_PATH%': assembler_path
+                '%POST_ASSEMBLE%': post_assemble_line
                     }
+        
         # Create build settings file from the template    
-        _buildfilecontent = replace_file_content(dict_replace,'resources' + SEP + 'build.template',init + SEP + genericfile)  
+        _buildfilecontent = replace_file_content(dict_replace,DEFAULT_RESOURCES_LOCATION + SEP + 'build.template',init + SEP + genericfile)  
         
         source_file = Prompt.ask("["+INFOCOLOR+"]Source File (including extension) ", default=system_prefix.lower() + ASM_FILE)
         assembled_file = Prompt.ask("["+INFOCOLOR+"]Target File (including extension) ", default=system_prefix.lower() + EXE_FILE)
@@ -450,20 +475,17 @@ def initialise(silent, init):
                     }
         
         # Create this build settings file from the template    
-        _thisbuildfilecontent = replace_file_content(dict_replace,'resources' + SEP + 'this.template',init + SEP + buildsettings)  
+        _thisbuildfilecontent = replace_file_content(dict_replace,DEFAULT_RESOURCES_LOCATION + SEP + 'this.template',init + SEP + buildsettings)  
         
-        if symbol_text != '':
-            # Create this build settings file from the template    
-            # Import Module
-            import shutil
+        # Create this build settings file from the template    
+        
+        # Source and destination
+        src = 'resources' + SEP + 'symbols.template'
+        dst = init + SEP + DEFAULT_SYMBOL_CONFIG_FILE
+        
+        # Copy File
+        shutil.copy(src, dst)
             
-            # Source and destination
-            src = 'resources' + SEP + 'symbols.template'
-            dst = init + SEP + 'symbols.toml'
-            
-            # Copy File
-            shutil.copy(src, dst)
-              
             
         
 def cleanup(silent, buildASM):
@@ -489,7 +511,8 @@ def get_symbolstructure(config, THIS_CONFIG_FILE, assembler):
     symbolValueFormat   = default_key(config[assembler], "symbolValueFormat", "N/A", True, assembler, THIS_CONFIG_FILE)
     preamble   = default_key(config[assembler], "preamble", "N/A", True, assembler, THIS_CONFIG_FILE)
     postamble   = default_key(config[assembler], "postamble", "N/A", True, assembler, THIS_CONFIG_FILE)
-
+    postassemble   = default_key(config[assembler], "postassemble", "N/A", True, assembler, THIS_CONFIG_FILE)
+    
     return symbolName, symbolValue, symbolValueFormat, preamble, postamble
              
 def get_parameters(config, THIS_CONFIG_FILE):
@@ -682,8 +705,9 @@ def cli(config, init, build, silent):
         validate_section(bsconfig,"AssemblerConfig", silent, 1, MASTER_CONFIG_FILE)
         
         # Get configuration from config file
-        assembler       = default_key(bsconfig["AssemblerConfig"], "assembler", "", True,'AssemblerConfig', MASTER_CONFIG_FILE)    # Both these keys have been checked and found to exist
-        assemblerDir    = default_key(bsconfig["AssemblerConfig"], "assemblerDir", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
+        assembler         = default_key(bsconfig["AssemblerConfig"], "assembler", "", True,'AssemblerConfig', MASTER_CONFIG_FILE)    # Both these keys have been checked and found to exist
+        assemblerDir      = default_key(bsconfig["AssemblerConfig"], "assemblerDir", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
+        postAssembleLine = default_key(bsconfig["AssemblerConfig"], "postassemble", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
         
         # Check supply of the specific build configuration file
         config = open_configuration_file(THIS_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Build Configuration');
@@ -718,6 +742,22 @@ def cli(config, init, build, silent):
 
         ''' Assemble the source code '''
         assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile  )
+
+        ''' Perform any post-assembly tasks '''
+        if postAssembleLine:
+            dict_replace = {
+            '%ASSEMBLER%': assembler,
+            '%ASSEMBLEDFILE%': assembledFile,
+            '%TOOLSDIR%': toolsDir,
+            '%SEP%': SEP,
+            '%PREFIX%': prefix.upper(),
+            '%OUTDIR%': outputDir,
+            }
+            post_assemble_line = replace_symbols(dict_replace,post_assemble_line)
+        else:
+            post_assemble_line = "N/A"
+        print(post_assemble_line)   
+
 
         if do_symbol_file:
             ''' Create the symbol file for inclusion in the debugger '''    
@@ -761,3 +801,40 @@ def cli(config, init, build, silent):
 
 if __name__ == '__main__':
     cli()
+
+
+
+
+'''
+dict_replace = {
+'%ASSEMBLEDFILE%': assembled_file,              # Name of assembled executable file
+'%ASSEMBLER_PATH%': assembler_path,             # Full path of the assembler 
+'%ASSEMBLER%': assembler_name,                  # Name of assembler to target
+'%BASE_ADDRESS%': base_address,                 # Base address to locate object code
+'%BUILDINFOFILE%': buildinfo_file,              # Name of source file (no path) for build version
+'%BUILDJUSTIFY%': buildJustify,                 # Justify property for build version
+'%DESCRIPTION%': description,                   
+'%FILENAME%': configfile,
+'%FLAGS%': flags,                               # Assembly output control flags (dictionary)
+'%NLAFTERBUILDVERSION%': NLAfterBuildVersion,   # Whether to put a newline after the build version 
+'%OUTDIR%': output_dir,                         # Directory to place outputs after assembly
+'%POST_ASSEMBLE%': post_assemble_line,          # Command to execute post assembly
+'%PREFIX%': system_prefix.upper(),              # Block name (uppercase)
+'%PREFIXL%': system_prefix.lower(),             # Block name (lowercase)
+'%SETTINGS%': genericfile,
+'%SOURCEFILE%': source_file,
+'%SRC%': init,                                  # Name of source directory (no path) for this project
+'%SRCDIR%': full_source_path,                   # Full source directory path of the source files
+'%SYMBOLFILE%': full_symbolfile,                
+'%SYMBOLS%': str(symbols),                      # Dictionary of symbols to load for the debugger
+'%TITLE%': configfile_title,
+'%TOOLSDIR%': tools_dst_dir,
+
+# Tool-specific constants
+'%PACKAGENAME%': _generator,                    # "Generated-by" constant
+
+# Platform-specific constants
+'%SEP%': SEP                                    # Platform-specific directory separator
+    }
+
+'''
