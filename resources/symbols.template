@@ -10,6 +10,7 @@ title = "Symbol table structure"
 
 [sbasm]
 assemblerHomeURL    = "https://www.sbprojects.net/sbasm/" # URL for obtaining this assembler.
+assemblerCommand    = "%ASSEMBLERDIR%%SEP%sbasm %SRCFILE%"      # Command to run assembler on the source file
 symbolName          = 1           # Name of symbol and location in row
 symbolValue         = 3           # Value of symbol and location in row
 symbolValueFormat   = "?????XXXX" # Format of Symbol:
@@ -20,6 +21,7 @@ postamble           = 0           # Any rows to ignore at the end of the symbol 
 
 [as0]
 assemblerHomeURL    = "https://github.com/JimInCA/motorola-6800-assembler" # URL for obtaining this assembler.
+assemblerCommand    = "%ASSEMBLERDIR%%SEP%as0 %SRCFILE% -L CRE C S > %SYMFILE%"     # Command to run assembler on the source file
 symbolName          = 1           # Name of symbol and location in row
 symbolValue         = 2           # Value of symbol and location in row
 symbolValueFormat   = "?????XXXX" # Format of Symbol:
@@ -27,4 +29,7 @@ symbolValueFormat   = "?????XXXX" # Format of Symbol:
                                   #   X indicates character of interest
 preamble            = 0           # Any rows to ignore at the beginning of the symbol file
 postamble           = 0           # Any rows to ignore at the end of the symbol file
-postassemble        = "%TOOLSDIR%%SEP%srec2bin %ASSEMBLEDFILE% -s %PREFIX%.s19" # Convert a Motorola S-Record file into a binary file
+postassemble        = "%TOOLSDIR%%SEP%srec2bin %ASSEMBLEDFILE% -s %PREFIXL%.s19" # Convert a Motorola S-Record file into a binary file
+
+[asm]
+assemblerHomeURL    = "https://github.com/tgtakaoka/libasm/blob/main/README.md"
