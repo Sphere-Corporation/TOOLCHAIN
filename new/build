@@ -330,6 +330,7 @@ def initialise(silent, init):
         genericfile = genericfile_base + EXT_TOML
         buildsettings = system_prefix.lower() + EXT_TOML
     
+<<<<<<< HEAD
         full_symbolfile = 'symbolstruct = "{0}"        # Symbol Structure file'.format(DEFAULT_SYMBOL_CONFIG_FILE)
         full_symbolfilename = DEFAULT_RESOURCES_LOCATION + SEP + DEFAULT_SYMBOL_TEMPLATE_FILE
 
@@ -348,6 +349,11 @@ def initialise(silent, init):
         else:
             symbol_file = ''
 
+=======
+        full_symbolfile = 'symbolstruct = "{0}/{1}"        # Symbol Structure file'.format(init,DEFAULT_SYMBOL_CONFIG_FILE)
+        full_symbolfilename = DEFAULT_RESOURCES_LOCATION + SEP + DEFAULT_SYMBOL_TEMPLATE_FILE
+
+>>>>>>> origin/feature/further-build-enhancements
         # Make new directory to store configuration files (and ultimately program source) in
                         
         if not make_directory(init):
@@ -387,10 +393,21 @@ def initialise(silent, init):
             else:
                 click.secho("Assembler executable {0} does not exist in {1}".format(assembler_name,assembler_path), fg=ERRORCOLOR)
         
+<<<<<<< HEAD
         symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File');
         post_assemble_line   = default_key(symbol_config[assembler_name], "postassemble", "None", True, assembler_name, full_symbolfilename)
         assemble_command   = default_key(symbol_config[assembler_name], "assembleCommand", "None", True, assembler_name, full_symbolfilename)
 
+=======
+        # TODO Get the correct post-assemble command here
+        print(full_symbolfile)
+        symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File');
+
+        
+        post_assemble_line   = default_key(symbol_config[assembler_name], "postassemble", "None", True, assembler_name, full_symbolfilename)
+        print(post_assemble_line)
+        
+>>>>>>> origin/feature/further-build-enhancements
         dict_replace = {
                 '%NAME%': name,
                 '%FILENAME%': configfile,
@@ -407,6 +424,11 @@ def initialise(silent, init):
                 '%TITLE%': configfile_title,
                 '%TODAY%': str(datetime.today().strftime('%Y-%m-%d')),
                 '%YEAR%':str(datetime.today().strftime('%Y')),
+<<<<<<< HEAD
+=======
+                '%ASSEMBLER%': assembler_name,
+                '%ASSEMBLER_PATH%': assembler_path,
+>>>>>>> origin/feature/further-build-enhancements
                 '%POST_ASSEMBLE%': post_assemble_line
                     }
         
@@ -489,7 +511,11 @@ def initialise(silent, init):
         
         # Source and destination
         src = 'resources' + SEP + 'symbols.template'
+<<<<<<< HEAD
         dst = DEFAULT_SYMBOL_CONFIG_FILE
+=======
+        dst = init + SEP + DEFAULT_SYMBOL_CONFIG_FILE
+>>>>>>> origin/feature/further-build-enhancements
         
         # Copy File
         shutil.copy(src, dst)
@@ -520,7 +546,12 @@ def get_symbolstructure(config, THIS_CONFIG_FILE, assembler):
     preamble   = default_key(config[assembler], "preamble", "N/A", True, assembler, THIS_CONFIG_FILE)
     postamble   = default_key(config[assembler], "postamble", "N/A", True, assembler, THIS_CONFIG_FILE)
     postassemble   = default_key(config[assembler], "postassemble", "N/A", True, assembler, THIS_CONFIG_FILE)
+<<<<<<< HEAD
     return symbolName, symbolValue, symbolValueFormat, preamble, postamble, postassemble
+=======
+    
+    return symbolName, symbolValue, symbolValueFormat, preamble, postamble
+>>>>>>> origin/feature/further-build-enhancements
              
 def get_parameters(config, THIS_CONFIG_FILE):
     srcDir          = default_key(config["Locations"], "srcDir", "N/A", True, "Locations", THIS_CONFIG_FILE)
