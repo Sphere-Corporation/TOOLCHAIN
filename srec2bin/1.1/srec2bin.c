@@ -50,7 +50,7 @@ void print_help(void)
 	printf("  256KB binary file named 'image.bin' filled with all 0's.\n");
 	printf("    srec2bin image.bin -K 256 -d 0\n");
 	printf("\n");
-	printf("  2MB binary file, 'fred.rom' from f1.s19, f2.mot, and f3.s37 w/blanks = 0xFF\n");
+	printf("  2MB binary file, 'fred.rom' from f1.s19, f2.mot, and f3.s37 w/blanks = 0xFF.\n");
 	printf("    srec2bin fred.bin -M 2 -s f1.s19 f2.mot f3.s37\n");
 	printf("\n");
 	printf("  128KB binary file, 'fred.rom' from f1.s19 with no screen output\n");

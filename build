@@ -265,7 +265,7 @@ def initialise(silent, init):
             # stuff to copy the toolchain locally
             import shutil
 
-            src_dir = tools_dir + SEP
+            src_dir = tools_dir + SEP 
             dst_dir= init + SEP + 'tools' + SEP
             
             tools_dst_dir =  'tools' 
@@ -451,9 +451,10 @@ def initialise(silent, init):
         else:
             flags = flags + "silent" + '","'
 
+        rom_value = 'NO'
         rom = Confirm.ask("["+INFOCOLOR+"]Are you building a ROM ?",default='y')
         if rom:
-            flags = flags + "rom" + '","'
+            rom_value = 'YES'
 
         flags = flags + '"]'
         flags = flags.replace(',""','')
@@ -470,6 +471,7 @@ def initialise(silent, init):
                 '%YEAR%':str(datetime.today().strftime('%Y')),
                 '%BASE_ADDRESS%': base_address,
                 '%FLAGS%': flags,
+                '%ROM%': rom_value,
                 '%SRCDIR%': full_source_path,
                 '%OUTDIR%': output_dir,
                 '%TOOLSDIR%': tools_dst_dir,
@@ -578,14 +580,14 @@ def output_symbol_creation_result(symbol_count, watch_count, SFILE):
         symtext = symtext + "s"
     click.secho('Adding ' + str(watch_count) + symtext + ' to watchlist ' + CR, fg=INFOCOLOR)
     
-def create_symbol_file(prefix, SFILE, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, NOT_EXIST, defaultSymbols):
+def create_symbol_file(prefix, SFILE, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, NOT_EXIST, defaultSymbols, init):
     
     pre = 0
     symbol_count = 0
     watch_count = 0
     
-    FULLFILE=(os.path.dirname(os.path.abspath(__file__))+SEP+SFILE)
-
+    FULLFILE=(os.path.dirname(os.path.abspath(__file__)) + SEP + init + SEP + SFILE)
+    print(FULLFILE)
     # Get number of lines in the file
     try:
         num_lines = sum(1 for _ in open(FULLFILE))
@@ -650,10 +652,10 @@ def assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, sy
         click.secho(error_message, fg=ERRORCOLOR)
         exit()
 
-    command = assemblerDir + assembler + ' ' + sourceFile
-    
+    # command = assemblerDir + assembler + ' ' + sourceFile
+    print(assembler_command)
     # Open a subprocess to run the command
-    p = subprocess.Popen(command, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True);
+    p = subprocess.Popen(assembler_command, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True);
 
     # Establish a connection to the process
     (output, err) = p.communicate()
@@ -671,7 +673,43 @@ def assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, sy
         if ("Error" in line or "Warning" in line) and line[:1] > '0':
                 click.secho("Assembly failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
                 exit();    
-              
+
+def post_assemble(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, post_assemble_command):
+    if not(silent):
+        click.secho('Executing post assembly command.', fg=INFOCOLOR)
+    directory = os.getcwd()
+    print(directory)
+    print(post_assemble_command)
+    # Open a subprocess to run the command
+    p = subprocess.Popen('..' + SEP + post_assemble_command, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True);
+
+    # Establish a connection to the process
+    (output, err) = p.communicate()
+    if not(silent) and output:
+        click.secho(output.decode('ascii'), fg=INFOCOLOR)
+    if err:
+        click.secho(err.decode('ascii'), fg=ERRORCOLOR)        
+
+    # Wait until the process has completed
+    _ = p.wait();
+
+    # Improving output 
+    # Build will cease if there are warnings and/or errors
+    if (assembler == 'sbasm'):
+        for line in output.decode('ascii').splitlines():  
+            if ("Error" in line or "Warning" in line) and line[:1] > '0':
+                    click.secho("Post Assemble command failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
+                    exit();    
+    if (assembler == 'as0'):
+        assemble_good = False
+        for line in output.decode('ascii').splitlines():  
+            if ("Error State: 0" in line):
+                assemble_good = True
+        print(assemble_good)
+        if not assemble_good:
+            click.secho("Post Assemble command failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
+            exit();    
+    
 @click.command()
 @click.option("--config","-c", help="Configuration file",required=False,default="config.toml")
 @click.option("--init","-i", help="Initialise build toolchain",required=False,default="")
@@ -736,7 +774,6 @@ def cli(config, init, build, silent):
             symbolName, symbolValue, symbolValueFormat, preamble, postamble, posttassemble = \
                 get_symbolstructure(symbol_config, THIS_CONFIG_FILE, assembler)
         # Return main build parameters
-        print(THIS_CONFIG_FILE)
         srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, \
         cassette, buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols,toolsDir = get_parameters(config, THIS_CONFIG_FILE)
 
@@ -746,8 +783,18 @@ def cli(config, init, build, silent):
         ''' Construct the version file for inclusion in the build '''
         build_version_file(silent, build, buildJustify, NLAfterBuildVersion, srcDir, buildASM)
 
+        dict_replace = {
+            '%ASSEMBLER%': assembler,
+            '%ASSEMBLERDIR%': assemblerDir,
+            '%TOOLSDIR%': toolsDir,
+            '%SEP%': SEP,
+            '%SRCFILE%': sourceFile,
+            '%OUTDIR%': outputDir,
+            }
+        formatted_assembler_command = replace_symbols(dict_replace, assembler_command)
+        
         ''' Assemble the source code '''
-        assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, assembler_command)
+        assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, formatted_assembler_command)
 
         ''' Perform any post-assembly tasks '''
         if postAssembleLine != "None":
@@ -757,6 +804,7 @@ def cli(config, init, build, silent):
             '%TOOLSDIR%': toolsDir,
             '%SEP%': SEP,
             '%PREFIX%': prefix.upper(),
+            '%PREFIXL%': prefix.lower(),
             '%OUTDIR%': outputDir,
             }
             post_assemble_line = replace_symbols(dict_replace, postAssembleLine)
@@ -764,10 +812,12 @@ def cli(config, init, build, silent):
             post_assemble_line = "N/A"
         print(post_assemble_line)   
 
+        ''' Execute the post-assembly line '''
+        post_assemble(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, post_assemble_line)
 
         if do_symbol_file:
             ''' Create the symbol file for inclusion in the debugger '''    
-            create_symbol_file(prefix, symbolFile, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, SYMBOL_FILE_DOES_NOT_EXIST, defaultSymbols);
+            create_symbol_file(prefix, symbolFile, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, SYMBOL_FILE_DOES_NOT_EXIST, defaultSymbols, srcDir);
 
         # Create the flags for the command line
         fl = ""
@@ -776,8 +826,10 @@ def cli(config, init, build, silent):
 
         # Create the commands to append to the command line
         all_cmds = get_cmds(vcass, vcass2, js, cassette)   
-                            
-        command = toolsDir + SEP + 'convertEXE --input ' + assembledFile +  ' --prefix ' + prefix + ' --base ' + base + ' --title ' + title + all_cmds + ' --out ' + outputDir + ' --in ' + srcDir + ' ' + fl
+        
+        print(srcDir + SEP + assembledFile)
+        
+        command = toolsDir + SEP + 'convertEXE --input ' + srcDir + SEP + assembledFile +  ' --prefix ' + prefix + ' --base ' + base + ' --title ' + title + all_cmds + ' --out ' + outputDir + ' --in ' + srcDir + ' ' + fl
         if not(silent):
             click.secho('Converting to other formats.' + CR, fg=INFOCOLOR)
 

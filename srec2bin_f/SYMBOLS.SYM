@@ -1,5 +1,0 @@
-BEG             .EQ     $00000200   RefCount=  0, Mem=Code, Source=xx.asm 
-DIDDLE          .EQ     $0000F0A2   RefCount=  1, Mem=Code, Source=xx.asm 
-DISBUF          .EQ     $0000E41D   RefCount=  3, Mem=Code, Source=xx.asm 
-MNPTR           .EQ     $0000E419   RefCount=  1, Mem=Code, Source=xx.asm 
-PUT             .EQ     $0000F0BB   RefCount=  1, Mem=Code, Source=xx.asm 

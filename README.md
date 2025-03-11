@@ -35,15 +35,16 @@ These comprise:
     * Folow the build instructions in the [README](https://github.com/bzotto/bin2sphere/blob/main/README.md)
     * Ensure the built executable is located in the same folder/directory as the `convertEXE` from this repo
   * Install `srec2bin`
-    * Source code is included for v1.1
+    * Source code is included for v1.1.1
     * Ensure the built executable is located in the same folder/directory as the `convertEXE` from this repo
 
 > **_NOTE:_**  
 _There is a version of `bin2sphere` included in this repo is dated October 9th 2023. It is recommended that to ensure the latest software is being used that you follow the installation instructions for `bin2sphere` above._
 >
->_There is a version of `srec2bin` included in this repo(compiled for Apple silicon) is dated April 2nd 2010. It is recommended that to ensure the latest software is being used that you check the [here](http://www.dragonwins.com/domains/getteched/rfid/srec2bin/index.htm) to ensure you have the latest version. Should you need/wish to compile the software, you will need a C compiler. The source code for v1.1 is included._ 
+>_There is a version of `srec2bin` included in this repo(compiled for Apple silicon). The version included here is v1.1.1. It is  based on a program located [here](http://www.dragonwins.com/domains/getteched/rfid/srec2bin/index.htm) which is version 1.1.
+It has been further modified by Andrew Shapton in 2025 to better integrate with a wider toolset. Details of the modifications are included in the code as comments.software, you will need a C compiler. The original source code for v1.1 is also included._ 
 >
->_Within the conversion tools, there is a library written by David Beazley [http://www.dabeaz.com](http://www.dabeaz.com) which converts a binary file to Kansas City Cassette format as used by the Sphere-1. (Original script available on [his site](http://www.dabeaz.com/py-kcs/index.html)).This has been updated by Ben Zotto in 2023 and again by Andrew Shapton also in 2023. The Python source code is required._
+>_Within the conversion tools, there is a library written by David Beazley [http://www.dabeaz.com](http://www.dabeaz.com) which converts a binary file to Kansas City Cassette format as used by the Sphere-1. [Original script available on his site](http://www.dabeaz.com/py-kcs/index.html)).This has been updated by Ben Zotto in 2023 and again by Andrew Shapton also in 2023. The Python source code is required._
 
 ## convertEXE package
 
