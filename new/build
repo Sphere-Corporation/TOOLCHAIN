@@ -252,34 +252,26 @@ def initialise(silent, init):
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
                 exit()
 
-        tools_dir = Prompt.ask("["+INFOCOLOR+"]What is the absolute path of the toolchain ? ")
-        if does_folder_exist(tools_dir):
+        tools_dir = 'resources'              
+
+        # stuff to copy the toolchain locally
+        import shutil
+
+        src_dir = tools_dir + SEP 
+        dst_dir= init + SEP + 'tools' + SEP
+        
+        tools_dst_dir =  'tools' 
+
+        # Make new directory to store toolchain files in
+        if not make_directory(dst_dir):
             pass
-        else:
-            # The toolchain isnt installed
-            click.secho("The toolchain is not installed", fg=ERRORCOLOR)
-            exit()                
-
-        copylocal = Confirm.ask("["+INFOCOLOR+"]Do you want to copy the toolchain locally ?",default='y')
-        if copylocal:
-            # stuff to copy the toolchain locally
-            import shutil
-
-            src_dir = tools_dir + SEP
-            dst_dir= init + SEP + 'tools' + SEP
+        for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere','srec2bin']:
+            src = src_dir + filename
+            dst =  dst_dir+ filename
             
-            tools_dst_dir =  'tools' 
-
-            # Make new directory to store toolchain files in
-            if not make_directory(dst_dir):
-                pass
-            for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere','srec2bin']:
-                src = src_dir + filename
-                dst =  dst_dir+ filename
-                
-                shutil.copy(src, dst)
-            shutil.copy(src_dir + SEP + 'build', init)
-               
+            shutil.copy(src, dst)
+        shutil.copy('build', init)
+            
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
         full_source_path = source_dir
         if does_folder_exist(full_source_path):
@@ -330,7 +322,6 @@ def initialise(silent, init):
         genericfile = genericfile_base + EXT_TOML
         buildsettings = system_prefix.lower() + EXT_TOML
     
-<<<<<<< HEAD
         full_symbolfile = 'symbolstruct = "{0}"        # Symbol Structure file'.format(DEFAULT_SYMBOL_CONFIG_FILE)
         full_symbolfilename = DEFAULT_RESOURCES_LOCATION + SEP + DEFAULT_SYMBOL_TEMPLATE_FILE
 
@@ -349,11 +340,6 @@ def initialise(silent, init):
         else:
             symbol_file = ''
 
-=======
-        full_symbolfile = 'symbolstruct = "{0}/{1}"        # Symbol Structure file'.format(init,DEFAULT_SYMBOL_CONFIG_FILE)
-        full_symbolfilename = DEFAULT_RESOURCES_LOCATION + SEP + DEFAULT_SYMBOL_TEMPLATE_FILE
-
->>>>>>> origin/feature/further-build-enhancements
         # Make new directory to store configuration files (and ultimately program source) in
                         
         if not make_directory(init):
@@ -393,21 +379,10 @@ def initialise(silent, init):
             else:
                 click.secho("Assembler executable {0} does not exist in {1}".format(assembler_name,assembler_path), fg=ERRORCOLOR)
         
-<<<<<<< HEAD
         symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File');
         post_assemble_line   = default_key(symbol_config[assembler_name], "postassemble", "None", True, assembler_name, full_symbolfilename)
         assemble_command   = default_key(symbol_config[assembler_name], "assembleCommand", "None", True, assembler_name, full_symbolfilename)
 
-=======
-        # TODO Get the correct post-assemble command here
-        print(full_symbolfile)
-        symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File');
-
-        
-        post_assemble_line   = default_key(symbol_config[assembler_name], "postassemble", "None", True, assembler_name, full_symbolfilename)
-        print(post_assemble_line)
-        
->>>>>>> origin/feature/further-build-enhancements
         dict_replace = {
                 '%NAME%': name,
                 '%FILENAME%': configfile,
@@ -424,11 +399,6 @@ def initialise(silent, init):
                 '%TITLE%': configfile_title,
                 '%TODAY%': str(datetime.today().strftime('%Y-%m-%d')),
                 '%YEAR%':str(datetime.today().strftime('%Y')),
-<<<<<<< HEAD
-=======
-                '%ASSEMBLER%': assembler_name,
-                '%ASSEMBLER_PATH%': assembler_path,
->>>>>>> origin/feature/further-build-enhancements
                 '%POST_ASSEMBLE%': post_assemble_line
                     }
         
@@ -511,11 +481,7 @@ def initialise(silent, init):
         
         # Source and destination
         src = 'resources' + SEP + 'symbols.template'
-<<<<<<< HEAD
-        dst = DEFAULT_SYMBOL_CONFIG_FILE
-=======
-        dst = init + SEP + DEFAULT_SYMBOL_CONFIG_FILE
->>>>>>> origin/feature/further-build-enhancements
+        dst = init + SEP + source_dir + SEP + DEFAULT_SYMBOL_CONFIG_FILE
         
         # Copy File
         shutil.copy(src, dst)
@@ -546,12 +512,7 @@ def get_symbolstructure(config, THIS_CONFIG_FILE, assembler):
     preamble   = default_key(config[assembler], "preamble", "N/A", True, assembler, THIS_CONFIG_FILE)
     postamble   = default_key(config[assembler], "postamble", "N/A", True, assembler, THIS_CONFIG_FILE)
     postassemble   = default_key(config[assembler], "postassemble", "N/A", True, assembler, THIS_CONFIG_FILE)
-<<<<<<< HEAD
     return symbolName, symbolValue, symbolValueFormat, preamble, postamble, postassemble
-=======
-    
-    return symbolName, symbolValue, symbolValueFormat, preamble, postamble
->>>>>>> origin/feature/further-build-enhancements
              
 def get_parameters(config, THIS_CONFIG_FILE):
     srcDir          = default_key(config["Locations"], "srcDir", "N/A", True, "Locations", THIS_CONFIG_FILE)

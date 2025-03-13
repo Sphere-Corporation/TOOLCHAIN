@@ -29,7 +29,7 @@ symbolValueFormat   = "?????XXXX" # Format of Symbol:
                                   #   X indicates character of interest
 preamble            = 0           # Any rows to ignore at the beginning of the symbol file
 postamble           = 0           # Any rows to ignore at the end of the symbol file
-postassemble        = "%TOOLSDIR%%SEP%srec2bin -v 1 -p 0 %ASSEMBLEDFILE% -s %PREFIXL%.s19" # Convert a Motorola S-Record file into a binary file
+postassemble        = "%TOOLSDIR%%SEP%srec2bin %ASSEMBLEDFILE% -v 1 -p 0 -s %PREFIXL%.s19" # Convert a Motorola S-Record file into a binary file
  
 [asm]
 assemblerHomeURL    = "https://github.com/tgtakaoka/libasm/blob/main/README.md"

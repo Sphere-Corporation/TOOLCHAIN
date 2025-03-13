@@ -252,34 +252,26 @@ def initialise(silent, init):
             if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
                 exit()
 
-        tools_dir = Prompt.ask("["+INFOCOLOR+"]What is the absolute path of the toolchain ? ")
-        if does_folder_exist(tools_dir):
+        tools_dir = 'resources'              
+
+        # stuff to copy the toolchain locally
+        import shutil
+
+        src_dir = tools_dir + SEP 
+        dst_dir= init + SEP + 'tools' + SEP
+        
+        tools_dst_dir =  'tools' 
+
+        # Make new directory to store toolchain files in
+        if not make_directory(dst_dir):
             pass
-        else:
-            # The toolchain isnt installed
-            click.secho("The toolchain is not installed", fg=ERRORCOLOR)
-            exit()                
-
-        copylocal = Confirm.ask("["+INFOCOLOR+"]Do you want to copy the toolchain locally ?",default='y')
-        if copylocal:
-            # stuff to copy the toolchain locally
-            import shutil
-
-            src_dir = tools_dir + SEP 
-            dst_dir= init + SEP + 'tools' + SEP
+        for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere','srec2bin']:
+            src = src_dir + filename
+            dst =  dst_dir+ filename
             
-            tools_dst_dir =  'tools' 
-
-            # Make new directory to store toolchain files in
-            if not make_directory(dst_dir):
-                pass
-            for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere','srec2bin']:
-                src = src_dir + filename
-                dst =  dst_dir+ filename
-                
-                shutil.copy(src, dst)
-            shutil.copy(src_dir + SEP + 'build', init)
-               
+            shutil.copy(src, dst)
+        shutil.copy('build', init)
+            
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
         full_source_path = source_dir
         if does_folder_exist(full_source_path):
@@ -489,7 +481,7 @@ def initialise(silent, init):
         
         # Source and destination
         src = 'resources' + SEP + 'symbols.template'
-        dst = DEFAULT_SYMBOL_CONFIG_FILE
+        dst = init + SEP + DEFAULT_SYMBOL_CONFIG_FILE
         
         # Copy File
         shutil.copy(src, dst)

@@ -3,12 +3,18 @@
 #include <string.h>
 
 /* 
-	Amendments by Andrew Shapton 11-MAR-2025 
-	
-	Added new flag -p to determine if a prompt is required post procesing or not.
-
-			 v1.1.1		(c) 2025	Andrew Shapton
+		 	 v1.1.1		(c) 2025	Andrew Shapton
 	Based on v1.1 		(c) 2010	Dragon
+
+	Changelog
+	=========
+
+	v1.1.1		11-MAR-2025		Andrew Shapton
+
+				Added new flag -p to determine if a prompt is required post procesing or not.
+				Corrected bug where default value was set to 0xFF instead of 0x00
+
+	
 
 */
 #define SREC_NEWLINE    (0) // Start of line
@@ -25,10 +31,12 @@
 #define FALSE (0)
 #define TRUE  (1)
 
+#define VERSION "1.1.1"
+
 void print_help(void)
 {
 	printf("\n");
-	printf("srec2bin: SREC file to BIN file conversion Utility v1.1\n");
+	printf("srec2bin: SREC file to BIN file conversion Utility v%s\n",VERSION);
 	printf("\n");
 	printf("Convert Motorola SREC (s19, s28, s37) files to a binary image file.\n");
 	printf("Multiple SREC files can be overlayed onto a single binary image.\n");
@@ -53,7 +61,7 @@ void print_help(void)
 	printf("   One of {B,K,M,G} must be used and 'size' must be an integer.\n");
 	printf("   Later SREC files in list take precedence.\n");
 	printf("   Attempts to write to values beyond specified ROM size will be ignored.\n");
-	printf("   The default blank value is 0x00.\n");
+	printf("   The default blank value is 0x0.\n");
 	printf("   The default verbosity is level 0 (no output), max level is 1.\n");
 	printf("   The default prompt is level 0 (no prompt), level 1 will give a prompt.\n");
 	printf("\n");
@@ -117,7 +125,7 @@ int main(int argc, char *argv[])
 	unsigned char byte, blank;
 
 	verbosity = 1;
-	enter_required = 0;
+	enter_required = 1;
 
 	// Print help screen if no arguments given
 	if (2>argc) // No command line arguments
@@ -131,7 +139,7 @@ int main(int argc, char *argv[])
 	blank = 0xFF;
 	rom_size = 256*1024;
 	min_rom_size = 0;
-	enter_required = 0;
+	enter_required = 1;
 
 	for (i = 1; i < argc-1; i++)
 	{
@@ -173,6 +181,7 @@ int main(int argc, char *argv[])
 		printf("ROM size:..... %i\n", rom_size);
 		printf("Blank Value:.. 0x%2X\n", blank);
 		printf("Verbosity:.... %i\n", verbosity);
+		printf("Prompt:....... %i\n", enter_required);
 		printf("SREC Files:... %i\n", argc-s_position);
 	}
 
