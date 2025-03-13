@@ -32,7 +32,7 @@ rom             = "YES"                  # YES/NO if a ROM is being built
 #   "movebin"       # Move the binary to the assets location post-build
 #   "silent"        # Don't produce any output (except errors)
                     
-flags           = ["movebin"]
+flags           = []
 
 [Locations]
 srcDir          = "src"              # Location of assembler source code
