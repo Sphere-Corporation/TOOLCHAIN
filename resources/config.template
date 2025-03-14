@@ -13,6 +13,6 @@
 title = "%TITLE%"
 
 [Config]
-build        = "%SRC%/%SETTINGS%"          # Generic Settings
-this         = "%SRC%/%BUILDSETTINGS%"             # Build specific settings
+build        = "%SETTINGS%"          # Generic Settings
+this         = "%BUILDSETTINGS%"             # Build specific settings
 %SYMBOLFILE%
