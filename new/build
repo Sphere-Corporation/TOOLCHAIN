@@ -368,7 +368,15 @@ def initialise(silent, init, overwrite):
 
         while True:
             assembler_name = Prompt.ask("["+INFOCOLOR+"]Assembler executable name  ", default="sbasm")
-            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to assembler executable  ", default="")
+
+            while True:
+                assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to assembler executable  ", default="")
+                if assembler_path != "":
+                    break
+                else:
+                    click.secho("Assembler path cannot be blank", fg=ERRORCOLOR)
+
+
             if assembler_path[-1] != '/':
                 assembler_path = assembler_path + SEP
         
