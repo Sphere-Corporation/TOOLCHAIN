@@ -14,5 +14,7 @@
 title = "Assembler Configuration TOML file"
 
 [AssemblerConfig]
-assembler       = "%ASSEMBLER%"                                                           # Name of assembler executable
+assembler       = "%ASSEMBLER%"         # Name of assembler executable
 assemblerDir    = "%ASSEMBLER_PATH%"    # Location of assembler
+postassemble    = "%POST_ASSEMBLE%"     # Post Assembly command
+assembleCommand = "%ASSEMBLECOMMAND%"   # Assemble command
