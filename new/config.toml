@@ -9,7 +9,11 @@
 # build (Version 0.0.7): Sphere-1 Builder
 # (c) 2023-2025 Andrew Shapton, Portions (c) 2010 William Bahn, 2010 David Beazley, 2023 Ben Zotto
 #
+<<<<<<< HEAD
 # Date: 2025-03-15
+=======
+# Date: 2025-03-14
+>>>>>>> origin/develop
 
 title = "Main configuration file for new"
 
