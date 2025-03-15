@@ -242,9 +242,12 @@ def build_version_file(silent, build, buildJustify, NLAfterBuildVersion, srcDir,
         f.write(fullline)
 
 def initialise(silent, init, overwrite):
+        
         # Parameter gathering for initialisation of new project configuration
         
         from rich.prompt import Prompt, Confirm
+        import questionary
+
         if not overwrite:
             if does_folder_exist(init):
                 info_message = CR + "Directory: \'{0}\' already exists".format(init)
@@ -365,10 +368,26 @@ def initialise(silent, init, overwrite):
         # Create configuration file from the template    
         configfilecontent = replace_file_content(dict_replace,DEFAULT_RESOURCES_LOCATION + SEP + 'config.template',init + SEP + configfile)  
         
-
         while True:
-            assembler_name = Prompt.ask("["+INFOCOLOR+"]Assembler executable name  ", default="sbasm")
-            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to assembler executable  ", default="")
+            # TODO - add styling to the question and answer etc
+            # get assembler names from symbols.template
+            real_assembler_name = questionary.select(
+            "Select the supported assembler:",qmark='',
+            choices=[
+                    "SB-Assembler 3",
+                    "Motorola 8-bit Cross Assembler (M68FCASS/AD1)",
+                    "libasm: cross assemble/disassemble library"
+                    ]
+            ).ask()
+            if real_assembler_name == "SB-Assembler 3":
+                assembler_name = "sbasm"
+            if real_assembler_name == "Motorola 8-bit Cross Assembler (M68FCASS/AD1)":
+                assembler_name = "as0"
+            if real_assembler_name == "libasm: cross assemble/disassemble library":
+                assembler_name = "asm"
+
+
+            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to "+real_assembler_name + " executable  ", default="")
             if assembler_path[-1] != '/':
                 assembler_path = assembler_path + SEP
         

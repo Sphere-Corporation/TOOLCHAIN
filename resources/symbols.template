@@ -9,6 +9,7 @@
 title = "Symbol table structure"
 
 [sbasm]
+assemblerRealName   = "SB-Assembler 3"
 assemblerHomeURL    = "https://www.sbprojects.net/sbasm/" # URL for obtaining this assembler.
 assembleCommand     = "%ASSEMBLERDIR%sbasm %SRCFILE%"      # Command to run assembler on the source file
 symbolName          = 1           # Name of symbol and location in row
@@ -20,6 +21,7 @@ preamble            = 0           # Any rows to ignore at the beginning of the s
 postamble           = 0           # Any rows to ignore at the end of the symbol file
 
 [as0]
+assemblerRealName   = "Motorola 8-bit Cross Assembler (M68FCASS/AD1)"
 assemblerHomeURL    = "https://github.com/JimInCA/motorola-6800-assembler" # URL for obtaining this assembler.
 assembleCommand     = "%ASSEMBLERDIR%as0 %SRCFILE% -L CRE C S > %SYMFILE%"     # Command to run assembler on the source file
 symbolName          = 1           # Name of symbol and location in row
@@ -29,7 +31,8 @@ symbolValueFormat   = "?????XXXX" # Format of Symbol:
                                   #   X indicates character of interest
 preamble            = 0           # Any rows to ignore at the beginning of the symbol file
 postamble           = 0           # Any rows to ignore at the end of the symbol file
-postassemble        = "%TOOLSDIR%%SEP%srec2bin %ASSEMBLEDFILE% -K 1 -v 1 -d 0 -p 0 -s %PREFIXL%.s19" # Convert a Motorola S-Record file into a binary file
+postassemble        = "%TOOLSDIR%%SEP%srec2bin %ASSEMBLEDFILE% -v 1 -p 0 -s %PREFIXL%.s19" # Convert a Motorola S-Record file into a binary file
  
 [asm]
+assemblerRealName   = "libasm: cross assemble/disassemble library"
 assemblerHomeURL    = "https://github.com/tgtakaoka/libasm/blob/main/README.md"
