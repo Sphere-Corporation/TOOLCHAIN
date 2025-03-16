@@ -317,10 +317,10 @@ def initialise(silent, init, overwrite):
         while True:
             system_prefix = Prompt.ask("["+INFOCOLOR+"]Prefix name (maximum 2 characters) ", default="XX")
             if len(system_prefix) != 2:
-                print("System Prefix {0} is should be 2 characters".format(system_prefix))
+                click.secho("System Prefix {0} is should be 2 characters".format(system_prefix), fg=ERRORCOLOR)
             else:
                 if system_prefix.upper() != system_prefix:
-                    print("System Prefix {0} should be upper case".format(system_prefix))
+                    click.echo("System Prefix {0} should be upper case".format(system_prefix), fg=ERRORCOLOR)
                 else:
                     break
         # Add extensions to filenames
@@ -331,9 +331,13 @@ def initialise(silent, init, overwrite):
         full_symbolfile = 'symbolstruct = "{0}"        # Symbol Structure file'.format(DEFAULT_SYMBOL_CONFIG_FILE)
         full_symbolfilename = DEFAULT_RESOURCES_LOCATION + SEP + DEFAULT_SYMBOL_TEMPLATE_FILE
 
+        symbol_file = 'NUL:'
+        if os.name == 'posix':
+            symbol_file = '/dev/null'
 
         add_symbol = Confirm.ask("["+INFOCOLOR+"]Do you want to add a symbol file? ",default='y')
         symbols = []
+
 
         if add_symbol:
             # Get Symbol file information details
@@ -344,7 +348,10 @@ def initialise(silent, init, overwrite):
                 if Confirm.ask("["+INFOCOLOR+"]Do you want to add another symbol? ",default='y') is False:
                     break
         else:
-            symbol_file = ''
+            symbol_file = 'NUL:'
+            if os.name == 'posix':
+                symbol_file = '/dev/null'
+
 
         # Make new directory to store configuration files (and ultimately program source) in
                         
@@ -373,12 +380,11 @@ def initialise(silent, init, overwrite):
         assembler_info=symbols_template_details.get("assemblers")
         assembler_choices = []
         for k in assembler_info:
-            real_name = k.get("assemblerRealName")
+            real_name = assembler_info[k][0].get("assemblerRealName")
             assembler_choices = assembler_choices + [real_name]
 
         while True:
             # TODO: - add styling to the question and answer etc
-            # TODO: get assembler names from symbols.template
             
             real_assembler_name = questionary.select(
             "Select the supported assembler:",qmark='',
@@ -386,35 +392,34 @@ def initialise(silent, init, overwrite):
             ).ask()
 
             for k in assembler_info:
-                if k.get("assemblerRealName") == real_assembler_name:
-                    assembler_name = k.get("assemblerExe")
+                if assembler_info[k][0].get("assemblerRealName") == real_assembler_name:
+                    assembler_name = k
                     break
-<<<<<<< Updated upstream
+            
+            while True:
+                assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to "+real_assembler_name + " executable  ", default="")
+                if assembler_path != "":
+                    break
                 else:
                     click.secho("Assembler path cannot be blank", fg=ERRORCOLOR)
 
-
-=======
-                
-            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to "+real_assembler_name + " executable  ", default="")
->>>>>>> Stashed changes
             if assembler_path[-1] != '/':
                 assembler_path = assembler_path + SEP
         
             if does_folder_exist(assembler_path):
                 pass
             else:
-                print("Assembler path {0} does not exist".format(assembler_path))
+                click.secho("Assembler path {0} does not exist".format(assembler_path), fg=ERRORCOLOR)
 
             if does_file_exist(assembler_path + assembler_name):
                 break
             else:
                 click.secho("Assembler executable {0} does not exist in {1}".format(assembler_name,assembler_path), fg=ERRORCOLOR)
         
-        symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File');
-        post_assemble_line   = default_key(symbol_config[assembler_name], "postassemble", "None", True, assembler_name, full_symbolfilename)
-        assemble_command   = default_key(symbol_config[assembler_name], "assembleCommand", "None", True, assembler_name, full_symbolfilename)
-
+        symbol_config = open_configuration_file(full_symbolfilename, SYMBOL_BASE_FILE_DOES_NOT_EXIST, silent, 'Symbol Configuration Base File')
+        post_assemble_line   = default_key(symbol_config['assemblers'][assembler_name][0], "postassemble", "None", False, '[assemblers.' + assembler_name + ']', full_symbolfilename)
+        assemble_command   = default_key(symbol_config['assemblers'][assembler_name][0], "assembleCommand", "None", False, '[assemblers.' + assembler_name + ']', full_symbolfilename)
+        
         dict_replace = {
                 '%NAME%': name,
                 '%FILENAME%': configfile,
@@ -538,12 +543,12 @@ def build_complete(silent):
             click.secho('Build is complete.' + CR, fg=SUCCESSCOLOR)
             
 def get_symbolstructure(config, THIS_CONFIG_FILE, assembler):
-    symbolName   = default_key(config[assembler], "symbolName", "N/A", True, assembler, THIS_CONFIG_FILE)
-    symbolValue   = default_key(config[assembler], "symbolValue", "N/A", True, assembler, THIS_CONFIG_FILE)
-    symbolValueFormat   = default_key(config[assembler], "symbolValueFormat", "N/A", True, assembler, THIS_CONFIG_FILE)
-    preamble   = default_key(config[assembler], "preamble", "N/A", True, assembler, THIS_CONFIG_FILE)
-    postamble   = default_key(config[assembler], "postamble", "N/A", True, assembler, THIS_CONFIG_FILE)
-    postassemble   = default_key(config[assembler], "postassemble", "N/A", True, assembler, THIS_CONFIG_FILE)
+    symbolName   = default_key(config, "symbolName", "N/A", True, assembler, THIS_CONFIG_FILE)
+    symbolValue   = default_key(config, "symbolValue", "N/A", True, assembler, THIS_CONFIG_FILE)
+    symbolValueFormat   = default_key(config, "symbolValueFormat", "N/A", True, assembler, THIS_CONFIG_FILE)
+    preamble   = default_key(config, "preamble", "N/A", True, assembler, THIS_CONFIG_FILE)
+    postamble   = default_key(config, "postamble", "N/A", True, assembler, THIS_CONFIG_FILE)
+    postassemble   = default_key(config, "postassemble", "N/A", True, assembler, THIS_CONFIG_FILE)
     return symbolName, symbolValue, symbolValueFormat, preamble, postamble, postassemble
              
 def get_parameters(config, THIS_CONFIG_FILE):
@@ -787,7 +792,6 @@ def cli(config, init, build, silent, overwrite):
         
         # Check supply of the specific build configuration file
         config = open_configuration_file(THIS_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Build Configuration');
-    
         # Validate all sections of the main build configuration file
         validate_section(config,"Locations", silent,1, THIS_CONFIG_FILE)
         validate_section(config,"BuildParameters", silent,32, THIS_CONFIG_FILE)
@@ -800,11 +804,9 @@ def cli(config, init, build, silent, overwrite):
             click.secho("\n** No Symbol File {0} provided - symbols will not be loaded. **\n".format(SYMBOL_CONFIG_FILE), fg=ERRORCOLOR)
             do_symbol_file = False
         else:    
-            # Validate the relevant assembler section of the symbol structure file
             symbol_config = open_configuration_file(SYMBOL_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Symbol Structure for assembler');
-            validate_section(symbol_config,assembler, silent,1, THIS_CONFIG_FILE)
             symbolName, symbolValue, symbolValueFormat, preamble, postamble, posttassemble = \
-                get_symbolstructure(symbol_config, THIS_CONFIG_FILE, assembler)
+                get_symbolstructure(symbol_config['assemblers'][assembler][0], SYMBOL_CONFIG_FILE, assembler)
         # Return main build parameters
         srcDir, outputDir, sourceFile, assembledFile, prefix, base, title, vcass, vcass2, js, flags, \
         cassette, buildASM, buildJustify, NLAfterBuildVersion, symbolFile, defaultSymbols,toolsDir = get_parameters(config, THIS_CONFIG_FILE)
@@ -846,7 +848,9 @@ def cli(config, init, build, silent, overwrite):
         ''' Execute the post-assembly line '''
         post_assemble(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, post_assemble_line)
 
-        if do_symbol_file:
+        if (symbolFile == '/dev/null' or symbolFile == 'NUL:'):
+            pass
+        else:
             ''' Create the symbol file for inclusion in the debugger '''    
             create_symbol_file(prefix, symbolFile, symbolName, symbolValue, symbolValueFormat, preamble, postamble, silent, SYMBOL_FILE_DOES_NOT_EXIST, defaultSymbols, srcDir);
 
