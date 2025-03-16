@@ -386,8 +386,17 @@ def initialise(silent, init, overwrite):
             if real_assembler_name == "libasm: cross assemble/disassemble library":
                 assembler_name = "asm"
 
+        while True:
+            assembler_name = Prompt.ask("["+INFOCOLOR+"]Assembler executable name  ", default="sbasm")
 
-            assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to "+real_assembler_name + " executable  ", default="")
+            while True:
+                assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to assembler executable  ", default="")
+                if assembler_path != "":
+                    break
+                else:
+                    click.secho("Assembler path cannot be blank", fg=ERRORCOLOR)
+
+
             if assembler_path[-1] != '/':
                 assembler_path = assembler_path + SEP
         

@@ -398,7 +398,6 @@ def initialise(silent, init, overwrite):
                     click.secho("Assembler path cannot be blank", fg=ERRORCOLOR)
 
 
->>>>>>> origin/develop
             if assembler_path[-1] != '/':
                 assembler_path = assembler_path + SEP
         
