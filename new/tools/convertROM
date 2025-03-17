@@ -147,7 +147,7 @@ def show_license(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
     click.secho('\nMIT LICENSE\n\n' + 
-        'Copyright (c) 2023 Andrew Shapton<alshapton@gmail.com>                        \n' + 
+        'Copyright (c) 2023/2024 Andrew Shapton<alshapton@gmail.com>                   \n' + 
         '                                                                              \n' + 
         'Permission is hereby  granted, free of charge, to any  person obtaining a copy\n' + 
         'of this software and  associated documentation files (the "Software"), to deal\n' + 

@@ -8,7 +8,7 @@
 # build (Version 0.0.7): Sphere-1 Builder
 # (c) 2023-2025 Andrew Shapton, Portions (c) 2010 William Bahn, 2010 David Beazley, 2023 Ben Zotto
 #
-# Date: 2025-03-16
+# Date: 2025-03-17
 
 # Definition of the assembler in use
 
@@ -17,5 +17,5 @@ title = "Assembler Configuration TOML file"
 [AssemblerConfig]
 assembler       = "as0"         # Name of assembler executable
 assemblerDir    = "/Users/andrew/MyProjects/Sphere/Tools/asm0/bin/"    # Location of assembler
-postassemble    = "%TOOLSDIR%%SEP%srec2bin %ASSEMBLEDFILE% -v 1 -p 0 -s %PREFIXL%.s19"     # Post Assembly command
-assembleCommand = "%ASSEMBLERDIR%as0 %SRCFILE% -L CRE C S > /dev/null"   # Assemble command
+postassemble    = "%TOOLSDIR%%SEP%srec2bin %SRCDIR%%SEP%%ASSEMBLEDFILE% -v 1 -p 0 -K 1 -s %SRCDIR%%SEP%%PREFIXL%.s19"     # Post Assembly command
+assembleCommand = "%ASSEMBLERDIR%as0 %SRCFILE% -L CRE C S > SYMBOLS.SYM"   # Assemble command

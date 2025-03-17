@@ -318,6 +318,30 @@ def announcement(TODAY, noheader, cassette, vcass, vcass2, silent):
             click.secho('         ' + ('With Virtual Sphere V1 cassette output' if vcass != "NONE" else 'No Virtual Sphere V1 cassette output'), fg="green")
             click.secho('         ' + ('With Virtual Sphere V2 cassette output' if vcass2 != "NONE" else 'No Virtual Sphere V2 cassette output') + CR, fg="green")
 
+def show_license(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.secho('\nMIT LICENSE\n\n' + 
+        'Copyright (c) 2023-2025 Andrew Shapton<alshapton@gmail.com>                   \n' + 
+        '                                                                              \n' + 
+        'Permission is hereby  granted, free of charge, to any  person obtaining a copy\n' + 
+        'of this software and  associated documentation files (the "Software"), to deal\n' + 
+        'in the  Software  without restriction, including without limitation the rights\n' + 
+        'to use,  copy,  modify,  merge,  publish,  distribute, sublicense, and/or sell\n' + 
+        'copies  of  the  Software, and  to permit  persons to  whom  the  Software is \n' + 
+        'furnished to do so, subject to the following conditions:                      \n' + 
+        '                                                                              \n' + 
+        'The above copyright notice and this permission notice shall be included in all\n' + 
+        'copies or substantial portions of the Software.                               \n' + 
+        '                                                                              \n' + 
+        'THE  SOFTWARE IS  PROVIDED "AS IS",  WITHOUT WARRANTY OF  ANY KIND, EXPRESS OR\n' + 
+        'IMPLIED,  INCLUDING BUT  NOT LIMITED  TO  THE  WARRANTIES  OF MERCHANTABILITY,\n' + 
+        'FITNESS FOR A PARTICULAR  PURPOSE AND NONINFRINGEMENT.  IN NO  EVENT SHALL THE\n' + 
+        'AUTHORS  OR  COPYRIGHT  HOLDERS  BE  LIABLE FOR  ANY CLAIM,  DAMAGES  OR OTHER\n' + 
+        'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR  OTHERWISE, ARISING FROM,\n' + 
+        'OUT OF OR IN CONNECTION  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n' + 
+        'SOFTWARE.\n\n', fg="green")
+    ctx.exit()
 
 @click.command(epilog='Check out the Github page for more documentation at https://github.com/Sphere-Corporation/CONVERT')
 @click.option("--base","-b", help="Base address.",required=True)
@@ -325,6 +349,7 @@ def announcement(TODAY, noheader, cassette, vcass, vcass2, silent):
 @click.option("--in","-I", "_i", help="Specify an input folder.", required=True,default='NONE')
 @click.option("--input","-i", "_input", help="Input MC6800 executable file.",required=True)
 @click.option("--js","-j", help="Virtual Cassette Javascript (will have a '.js' extension).",required=False, default="")
+@click.option("--license","-l", help="Show the license (MIT).", callback=show_license, expose_value=False,is_flag=True, is_eager=True)
 @click.option("--movebin","-m", help="Move original binary to output location",required=False,default=False,is_flag=True)
 @click.option("--noheader","-n", help="Don't produce headers for JS file.",required=False,default=False,is_flag=True)
 @click.option("--out", "-O", "_o", help="Specify an output folder.", required=True,default='NONE')
