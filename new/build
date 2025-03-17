@@ -789,7 +789,7 @@ def cli(config, init, build, silent, overwrite):
         assembler         = default_key(bsconfig["AssemblerConfig"], "assembler", "", True,'AssemblerConfig', MASTER_CONFIG_FILE)    # Both these keys have been checked and found to exist
         assemblerDir      = default_key(bsconfig["AssemblerConfig"], "assemblerDir", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
         postAssembleLine = default_key(bsconfig["AssemblerConfig"], "postassemble", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
-        
+
         # Check supply of the specific build configuration file
         config = open_configuration_file(THIS_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Build Configuration');
         # Validate all sections of the main build configuration file
@@ -836,6 +836,7 @@ def cli(config, init, build, silent, overwrite):
             '%ASSEMBLER%': assembler,
             '%ASSEMBLEDFILE%': assembledFile,
             '%TOOLSDIR%': toolsDir,
+            '%SRCDIR%': srcDir,
             '%SEP%': SEP,
             '%PREFIX%': prefix.upper(),
             '%PREFIXL%': prefix.lower(),
@@ -845,7 +846,7 @@ def cli(config, init, build, silent, overwrite):
         else:
             post_assemble_line = "N/A"
 
-        ''' Execute the post-assembly line '''
+        ''' Execute the post-assembly line '''        
         post_assemble(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, post_assemble_line)
 
         if (symbolFile == '/dev/null' or symbolFile == 'NUL:'):
