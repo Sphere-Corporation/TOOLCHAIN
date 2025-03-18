@@ -309,7 +309,7 @@ def initialise(silent, init, overwrite):
 
         name = Prompt.ask("["+INFOCOLOR+"]What is your name ")           
         configfile_base = Prompt.ask("["+INFOCOLOR+"]Configuration file name (no extension) ", default="config")
-        configfile_description = Prompt.ask("["+INFOCOLOR+"]Configuration file description (optional) ")
+        configfile_description = Prompt.ask("["+INFOCOLOR+"]Configuration file description ",default=init)
         configfile_title = Prompt.ask("["+INFOCOLOR+"]Configuration file title  ",default="Main configuration file for " + init)
         
         genericfile_base = Prompt.ask("["+INFOCOLOR+"]Settings file name (no extension) ", default="build")
@@ -446,7 +446,7 @@ def initialise(silent, init, overwrite):
         assembled_file = Prompt.ask("["+INFOCOLOR+"]Target File (including extension) ", default=system_prefix.lower() + EXE_FILE)
 
         base_address = Prompt.ask("["+INFOCOLOR+"]Base Address  ", default="0200")
-        description = Prompt.ask("["+INFOCOLOR+"]Short Description  ")
+        description = Prompt.ask("["+INFOCOLOR+"]Short Description  ",default=init)
         
         # Get Build information details
         buildinfo_file = Prompt.ask("["+INFOCOLOR+"]Build info File ", default='build' + ASM_FILE)
