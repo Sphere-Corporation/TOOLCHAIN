@@ -144,6 +144,7 @@ def does_file_exist(filename):
         return False
     
 def make_directory(directory):
+    print(directory)
     ''' Make a directory '''
     try:  
         os.mkdir(directory)  
@@ -248,12 +249,25 @@ def initialise(silent, init, overwrite):
         from rich.prompt import Prompt, Confirm
         import questionary
 
-        if not overwrite:
-            if does_folder_exist(init):
-                info_message = CR + "Directory: \'{0}\' already exists".format(init)
-                if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
-                    exit()
-
+        print(init)
+        print(overwrite)
+        if does_folder_exist(init):
+            # If overwrite isnt specified, ask
+            if not overwrite:
+                if does_folder_exist(init):
+                    info_message = CR + "Directory: \'{0}\' already exists".format(init)
+                    if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
+                        exit()
+                    else:    
+                        if not make_directory(init):
+                            pass
+            else:
+                if not make_directory(init):
+                            pass
+        else:
+            if not make_directory(init):
+                        pass            
+        
         tools_dir = 'resources'              
 
         # stuff to copy the toolchain locally
@@ -267,17 +281,19 @@ def initialise(silent, init, overwrite):
         # Make new directory to store toolchain files in
         if not make_directory(dst_dir):
             pass
+        
         for filename in ['convertEXE','convertROM','encode_tape.py','bin2sphere','srec2bin']:
-            src = src_dir + filename
-            dst =  dst_dir+ filename
-            
+            src = tools_dir + SEP + filename
+            dst =  dst_dir+filename
             shutil.copy(src, dst)
+
         shutil.copy('build', init)
             
         source_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the program source within " + init + " ? ",default='src')
-        full_source_path = source_dir
-        if not overwrite:
+        full_source_path = init + SEP + source_dir
+        print(full_source_path)
 
+        if not overwrite:
             if does_folder_exist(full_source_path):
                 info_message = CR + "Directory: \'{0}\' already exists".format(full_source_path)
                 if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
@@ -286,14 +302,17 @@ def initialise(silent, init, overwrite):
                     # Make new directory to store source files in
                     if not make_directory(full_source_path):
                         pass
+            else:
+                # Make new directory to store source files in
+                if not make_directory(full_source_path):
+                    pass
         else:
             # Make new directory to store source files in
             if not make_directory(full_source_path):
                 pass
-
+        
         output_dir = Prompt.ask("["+INFOCOLOR+"]What is the path of the output files ? ",default='ASSETS')
         if not overwrite:
-
             if does_folder_exist(init + SEP + output_dir):
                 info_message = CR + "Directory: \'{0}\' already exists".format(output_dir)
                 if Confirm.ask("["+INFOCOLOR+"]" + info_message + "; do you wish to continue? ") is False:
@@ -302,6 +321,10 @@ def initialise(silent, init, overwrite):
                     # Make new directory to store outputfiles files in
                     if not make_directory(init + SEP + output_dir):
                         pass
+            else:
+                # Make new directory to store outputfiles files in
+                if not make_directory(init + SEP + output_dir):
+                    pass
         else:
             # Make new directory to store outputfiles files in
             if not make_directory(init + SEP + output_dir):
@@ -510,7 +533,6 @@ def initialise(silent, init, overwrite):
                 '%SYMBOLFILE%': symbol_file,
                 '%SYMBOLS%': str(symbols)
                     }
-        
         # Create this build settings file from the template    
         _thisbuildfilecontent = replace_file_content(dict_replace,DEFAULT_RESOURCES_LOCATION + SEP + 'this.template',init + SEP + buildsettings)  
         
@@ -518,13 +540,10 @@ def initialise(silent, init, overwrite):
         
         # Source and destination
         src = 'resources' + SEP + 'symbols.template'
-        dst = init + SEP + source_dir + SEP + DEFAULT_SYMBOL_CONFIG_FILE
-        
+        dst = init  + SEP + DEFAULT_SYMBOL_CONFIG_FILE
         # Copy File
         shutil.copy(src, dst)
             
-            
-        
 def cleanup(silent, buildASM):
         # Remove the build.asm file here
         if not(silent):
@@ -921,6 +940,8 @@ dict_replace = {
 '%SYMBOLS%': str(symbols),                      # Dictionary of symbols to load for the debugger
 '%TITLE%': configfile_title,
 '%TOOLSDIR%': tools_dst_dir,
+'%ROM%': rom_value,                             # Whether the build is for a ROM
+
 
 # Tool-specific constants
 '%PACKAGENAME%': _generator,                    # "Generated-by" constant
