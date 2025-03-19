@@ -757,6 +757,24 @@ def post_assemble(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFil
             click.secho("Post Assemble command failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
             exit();    
     
+
+
+
+def process_symbol_file(symbol_file):
+    lines = []
+    with open(symbol_file,'r') as f1:
+        # reading each line from original symbol file and storing it in a list
+        for line in f1.readlines():
+            # Only store if a line does not begin with a number and does not have an asterisk in it
+            if not line[0].isdigit()  and '*' not in line:
+                lines.append(line)
+    with open(symbol_file, 'w') as f2:
+        for line in lines:
+            f2.write(line.replace('\f',''))
+
+
+
+
 @click.command()
 @click.option("--config","-c", help="Configuration file",required=False,default="config.toml")
 @click.option("--init","-i", help="Initialise build toolchain",required=False,default="")
@@ -844,6 +862,14 @@ def cli(config, init, build, silent, overwrite):
         
         ''' Assemble the source code '''
         assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFile, formatted_assembler_command)
+
+        ''' Perform post-assembly tasks for specific assemblers '''
+        if (assembler == 'as0'):
+            print(symbolFile)
+            x = process_symbol_file(symbolFile)
+            click.secho("Post Assemble command failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
+               
+        
 
         ''' Perform any post-assembly tasks '''
         if postAssembleLine != "None":
