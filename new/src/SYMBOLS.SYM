@@ -1,5 +1,1 @@
-BEG   .EQU   $0000
-DIDDLE   .EQU   $F0A2
-DISBUF   .EQU   $E41D
-MNPTR   .EQU   $E419
-PUT   .EQU   $F0BB
+as: can't open xx.asm

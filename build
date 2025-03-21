@@ -695,6 +695,11 @@ def assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, sy
         click.secho(error_message, fg=ERRORCOLOR)
         exit()
 
+    if not does_file_exist(sourceFile):
+        error_message = "Source file: {0} does not exist".format(sourceFile)
+        click.secho(error_message, fg=ERRORCOLOR)
+        exit()
+
     # command = assemblerDir + assembler + ' ' + sourceFile
     # Open a subprocess to run the command
     p = subprocess.Popen(assembler_command, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True);
