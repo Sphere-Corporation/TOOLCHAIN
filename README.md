@@ -22,6 +22,11 @@ These comprise:
         <td>A utility for producing vintage Sphere cassette tape data blocks.
     </td>
     </tr>
+        <tr>
+        <td><tt><b>srec2bin</td>
+        <td>A utility converting Motorola S-record format files to executables.
+    </td>
+    </tr>
 </table>
 
 # Installation
@@ -46,31 +51,8 @@ It has been further modified by Andrew Shapton in 2025 to better integrate with 
 >
 >_Within the conversion tools, there is a library written by David Beazley [http://www.dabeaz.com](http://www.dabeaz.com) which converts a binary file to Kansas City Cassette format as used by the Sphere-1. [Original script available on his site](http://www.dabeaz.com/py-kcs/index.html)).This has been updated by Ben Zotto in 2023 and again by Andrew Shapton also in 2023. The Python source code is required._
 
-## convertEXE package
+# convertEXE information
 
- * Clone the repository and ensure that the path is on your search path.
- * Test the installation by typing 
- `convertEXE --version`
- * If you see the following: 
-
- `convertEXE (Version 1.0.3): Convert MC6800 assembled code into Sphere-1 loadable package and other formats.` 
-
-`(c) Andrew Shapton 2023, Portions (c) Ben Zotto 2023` all is well.
-
-**OR**
-
-`convertROM --version`
-
-If you see the following:
-
-`convertROM (Version 1.2): 
-Converts a Sphere ROM binary file into a form suitable for the SPHERE-Firmware emulator`
-
- Note that the versions *could* be slightly different from these shown, if small bugfixes have been introduced.
- 
- If not, check that the repository is cloned correctly and that the location is definitely on your search path.
-
-# convertEXE
 ## Formats supported
 
  * Virtual Cassette for Ben Zotto's Virtual Sphere-1 emulator
@@ -102,11 +84,12 @@ Options:
   --help               Show this message and exit.
 
   Check out the Github page for more documentation at
-  https://github.com/Sphere-Corporation/CONVERT
+  https://github.com/Sphere-Corporation/TOOLCHAIN
 
   ```
 
-# convertROM
+# convertROM information
+
 ## Explanation
 
 Converts a raw, SPHERE-1 ROM Image into a format that can be used with either:
