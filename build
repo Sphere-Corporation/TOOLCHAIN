@@ -65,6 +65,10 @@ EXT_TPLT = ".template"
 # File constants
 DEFAULT_RESOURCES_LOCATION = "resources"
 DEFAULT_SYMBOL_CONFIG_ROOT = "symbols"
+DEFAULT_PLUGINS_ROOT = "plugins"
+DEFAULT_PLUGINS_ASSEMBLER_ROOT = "assemblers"
+
+PLUGINASSEMBLERPATH = DEFAULT_PLUGINS_ROOT + SEP + DEFAULT_PLUGINS_ASSEMBLER_ROOT + SEP
 
 DEFAULT_SYMBOL_CONFIG_FILE = DEFAULT_SYMBOL_CONFIG_ROOT + EXT_TOML
 DEFAULT_SYMBOL_TEMPLATE_FILE = DEFAULT_SYMBOL_CONFIG_ROOT + EXT_TPLT
@@ -92,8 +96,28 @@ COULDNT_DELETE              = "Could not delete "  + GENERIC_DOES_NOT_EXIST
 SYMBOL_FILE_DOES_NOT_EXIST  = "Symbol file " + GENERIC_DOES_NOT_EXIST
 SYMBOL_BASE_FILE_DOES_NOT_EXIST = "Base symbol configuration file " + GENERIC_DOES_NOT_EXIST
 
+
+# POC
+import importlib.util
+import sys
+from importlib.machinery import SourceFileLoader
+
+def import_from_file(module_name, file_path):
+
+    loader = SourceFileLoader(module_name, file_path)
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    module = importlib.util.module_from_spec(spec)
+
+    sys.modules[module_name] = module    # this step is not necessary, but it's
+                                         # probably not a bad idea to have a manually
+                                         # imported module stored in sys.modules
+    spec.loader.exec_module(module)
+    return module
+# End POC
+
 def open_configuration_file(CFILE, NOT_EXIST, silent, literal):
     ''' Check supply of a configuration file '''
+
     try:
         with open(CFILE, 'r') as f:
             config = toml.load(f)
@@ -413,10 +437,11 @@ def initialise(silent, init, overwrite):
             for k in assembler_info:
                 if assembler_info[k][0].get("assemblerRealName") == real_assembler_name:
                     assembler_name = k
+                    assembler_ID = assembler_info[k][0].get("assemblerID")
                     break
-            
+
             while True:
-                assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to "+real_assembler_name + " executable  ", default="")
+                assembler_path = Prompt.ask("["+INFOCOLOR+"]Full path to " + real_assembler_name + " executable  ", default="")
                 if assembler_path != "":
                     break
                 else:
@@ -444,6 +469,7 @@ def initialise(silent, init, overwrite):
                 '%FILENAME%': configfile,
                 '%SETTINGS%': genericfile,
                 '%SRC%': source_dir,
+                '%ASSEMBLERID%': str(assembler_ID),
                 '%ASSEMBLER%': assembler_name,
                 '%ASSEMBLECOMMAND%': assemble_command,
                 '%SYMFILE%': symbol_file,
@@ -695,11 +721,6 @@ def assemble_source_code(silent, srcDir, assemblerDir, assembler, sourceFile, sy
         click.secho(error_message, fg=ERRORCOLOR)
         exit()
 
-    if not(does_file_exist(sourceFile)):
-        error_message = "Source file: {0} does not exist".format(sourceFile)
-        click.secho(error_message, fg=ERRORCOLOR)
-        exit()
-        
     # command = assemblerDir + assembler + ' ' + sourceFile
     # Open a subprocess to run the command
     p = subprocess.Popen(assembler_command, stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True);
@@ -762,24 +783,6 @@ def post_assemble(silent, srcDir, assemblerDir, assembler, sourceFile, symbolFil
             click.secho("Post Assemble command failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
             exit();    
     
-
-
-
-def process_symbol_file(symbol_file):
-    lines = []
-    with open(symbol_file,'r') as f1:
-        # reading each line from original symbol file and storing it in a list
-        for line in f1.readlines():
-            # Only store if a line does not begin with a number and does not have an asterisk in it
-            if not line[0].isdigit()  and '*' not in line:
-                lines.append(line)
-    with open(symbol_file, 'w') as f2:
-        for line in lines:
-            f2.write(line.replace('\f',''))
-
-
-
-
 @click.command()
 @click.option("--config","-c", help="Configuration file",required=False,default="config.toml")
 @click.option("--init","-i", help="Initialise build toolchain",required=False,default="")
@@ -823,10 +826,23 @@ def cli(config, init, build, silent, overwrite):
         validate_section(bsconfig,"AssemblerConfig", silent, 1, MASTER_CONFIG_FILE)
         
         # Get configuration from config file
+        assembler_ID      = default_key(bsconfig["AssemblerConfig"], "assemblerID", "", True,'AssemblerConfig', MASTER_CONFIG_FILE)
         assembler_command = default_key(bsconfig["AssemblerConfig"], "assembleCommand", "", True,'AssemblerConfig', MASTER_CONFIG_FILE)
         assembler         = default_key(bsconfig["AssemblerConfig"], "assembler", "", True,'AssemblerConfig', MASTER_CONFIG_FILE)    # Both these keys have been checked and found to exist
         assemblerDir      = default_key(bsconfig["AssemblerConfig"], "assemblerDir", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
-        postAssembleLine = default_key(bsconfig["AssemblerConfig"], "postassemble", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
+        postAssembleLine  = default_key(bsconfig["AssemblerConfig"], "postassemble", "", True,'AssemblerConfig', MASTER_CONFIG_FILE) # so no defaults are required.
+
+        # At this point we know the assembler name
+        # POC
+
+
+        # Example usage
+        assemblerSpecific = import_from_file(assembler, PLUGINASSEMBLERPATH + assembler_ID + "." + assembler)
+        _asmplugin_info = assemblerSpecific.info()
+        click.secho("\nSuccessfully loaded " + _asmplugin_info['name'] + ' Version ' + _asmplugin_info['version'] + ' Copyright ' + _asmplugin_info['copyright'], fg=INFOCOLOR)
+
+        input("Press Enter to continue...")
+        # End POC
 
         # Check supply of the specific build configuration file
         config = open_configuration_file(THIS_CONFIG_FILE, CONFIG_FILE_DOES_NOT_EXIST, silent, 'Build Configuration');
@@ -870,11 +886,11 @@ def cli(config, init, build, silent, overwrite):
 
         ''' Perform post-assembly tasks for specific assemblers '''
         if (assembler == 'as0'):
-            print(symbolFile)
-            x = process_symbol_file(symbolFile)
-            click.secho("Post Assemble command failed - Warnings and/or Errors.", fg=ERRORCOLOR)        
-               
-        
+            click.secho("\nNormalising symbol file.\n", fg=INFOCOLOR)        
+            _x = assemblerSpecific.normaliseSymbolFile(symbolFile)
+
+        if (assembler == 'sbasm'):
+            pass
 
         ''' Perform any post-assembly tasks '''
         if postAssembleLine != "None":
